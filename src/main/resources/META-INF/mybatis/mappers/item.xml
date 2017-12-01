@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.item.mappers.ItemMapper">
+
+	<select id="getSeq" resultType="int">
+		select
+			item_seq.nextval 
+		from
+			dual
+	</select>
+
+	<insert id="addItem" parameterType="Item">
+		insert into items
+		(item_id, item_option, initial_quantity, saled_quantity, product_id, item_sale_price, item_original_price, image_id)
+		values
+		(#{id}, #{options}, #{initialQuantity}, #{saledQuantity}, #{product.id}, #{salePrice}, #{originalPrice}, #{image.id})
+	</insert>
+	
+	<select id="getItems" parameterType="Criteria" resultType="Item">
+		select
+			I.item_id				as id,
+			I.item_option			as options,
+			I.initial_quantity	as initialQuantity,
+			I.saled_quantity		as saledQuantity,
+			P.product_name			as "product.name",
+			I.item_original_price	as originalPrice,
+			I.item_sale_price		as salePrice,
+			I.image_id			as image,
+			I.item_createdate		as createdate,
+			C.company_name		as "product.company.name"
+		from
+			items I, products P, companies C
+		where
+			I.product_id = P.product_id
+			and P.company_id = C.company_id
+			<if test="keyword != ''">
+				<choose>
+					<when test="opt == 'title'">
+						and P.product_name like '%' || #{keyword} || '%'
+					</when>
+					<when test="opt == 'seller'">
+						and C.company_name like '%' || #{keyword} || '%'
+					</when>
+				</choose>
+			</if>
+			<if test="beginday != null">
+				and item_createdate &gt; to_date(#{beginday}, 'yyyy-mm-dd')
+			</if>
+			<if test="endday != null">
+				and item_createdate &lt; to_date(#{endday}, 'yyyy-mm-dd') + 1
+			</if>
+	</select>
+	
+	<select id="getItemByItemNo" parameterType="int" resultType="Item">
+		select
+			item_id				as id,
+			item_option			as options,
+			initial_quantity	as initialQuantity,
+			saled_quantity		as saledQuantity,
+			product_id			as "product.id",
+			item_original_price	as originalPrice,
+			item_sale_price		as salePrice,
+			image_id			as "image.id",
+			item_createdate		as createdate
+		from
+			items
+		where
+			item_id = #{value}
+	</select>
+	
+	<select id="getItemsByComId" parameterType="map" resultType="Item">
+		select 
+			item_id				as id,
+			item_option			as options,
+			initial_quantity	as initialQuantity,
+			saled_quantity		as saledQuantity,
+			item_original_price	as originalPrice,
+			item_sale_price		as salePrice,
+			item_createdate		as createdate,
+			product_name		as "product.name",
+			product_show		as "product.show",
+			product_createdate	as "product.createDate",
+			company_id			as "product.id",
+			small_category_name	as "product.smallCategory.name"
+		from(
+			select 
+				row_number() over(order by item_id desc, product_name asc) rn,
+				I.item_id,
+				I.item_option,
+				I.initial_quantity,
+				I.saled_quantity,
+				I.item_original_price,
+				I.item_sale_price,
+				I.item_createdate,
+				P.product_name,
+				P.product_show,
+				P.product_createdate,
+				P.company_id,
+				SC.small_category_name
+			from
+				items I, products P, small_categories SC
+			where
+				P.small_category_id = SC.small_category_id
+			and
+				P.product_id = I.product_id
+			and
+				P.company_id = ${companyId}
+				<if test="criteria.keyword != null">
+					<choose>
+						<when test="criteria.opt == 'productName'">
+							and product_name like '%' || #{criteria.keyword} || '%'
+						</when>
+						<when test="criteria.opt == 'options'">
+							and item_option like '%' || #{criteria.keyword} || '%'
+						</when>
+						<when test="criteria.opt == 'category'">
+							and small_category_name like '%' || #{criteria.keyword} || '%'
+						</when>
+					</choose>
+				</if>
+				<if test="criteria.beginday != null">
+					and item_createdate &gt; #{criteria.beginday}
+				</if>
+				<if test="criteria.endday != null">
+					and item_createdate &lt; #{criteria.endday} + 1
+				</if>
+			)
+			where rn >= #{criteria.beginIndex} and rn &lt;= #{criteria.endIndex}
+	</select>
+	
+	<select id="getTotalRows" parameterType="map" resultType="int">
+		select
+			count (*)
+		from
+			items I, products P, small_categories SC
+		where
+			P.small_category_id = SC.small_category_id
+		and
+			P.product_id = I.product_id
+		and
+			P.company_id = #{companyId}
+			<if test="criteria.keyword != null">
+				<choose>
+					<when test="criteria.opt == 'productName'">
+						and product_name like '%' || #{criteria.keyword} || '%'
+					</when>
+					<when test="criteria.opt == 'options'">
+						and item_option like '%' || #{criteria.keyword} || '%'
+					</when>
+					<when test="criteria.opt == 'category'">
+						and small_category_name like '%' || #{criteria.keyword} || '%'
+					</when>
+				</choose>
+			</if>
+			<if test="criteria.beginday != null">
+				and item_createdate &gt; #{criteria.beginday}
+			</if>
+			<if test="criteria.endday != null">
+				and item_createdate &lt; #{criteria.endday} + 1
+			</if>
+	</select>
+	
+	<select id="getItemsByProductId" parameterType="int" resultType="Item">
+		select
+			I.item_id				as id,
+			I.item_option			as options,
+			I.initial_quantity		as initialQuantity,
+			I.saled_quantity		as saledQuantity,
+			P.product_id			as "product.id",
+			I.item_original_price	as originalPrice,
+			I.item_sale_price		as salePrice,
+			M.image_id				as "image.id",
+			M.image_path			as "image.path",
+			I.item_createdate		as createdate
+		from 
+			items I, products  P, images M
+		where
+			I.product_id = P.product_id
+		and
+			I.image_id = M.image_id
+		and
+			I.product_id = #{value}
+	</select>
+	<!-- 상품 상세페이지 안 옵션 -->	
+	<select id="getProductOptionsByProductId" parameterType="int" resultType="Item">
+		select
+			item_id					as id,
+			item_option				as options,
+			initial_quantity		as initialQuantity,
+			saled_quantity			as saledQuantity,
+			product_id				as "product.id",
+			item_original_price		as originalPrice,
+			item_sale_price			as salePrice,
+			image_id				as "image.id",
+			item_createdate			as createdate
+		from
+			items
+		where 
+			product_id = #{value}
+	</select>
+	
+	<select id="getItemById" parameterType="int" resultType="Item">
+		select
+			I.item_id				as id,
+			I.item_option			as options,
+			I.initial_quantity		as initialQuantity,
+			I.saled_quantity		as saledQuantity,
+			P.product_id			as "product.id",
+			I.item_original_price	as originalPrice,
+			I.item_sale_price		as salePrice,
+			M.image_id				as "image.id",
+			I.item_createdate		as createdate
+		from 
+			items I, products  P, images M
+		where
+			I.product_id = P.product_id
+		and
+			I.image_id = M.image_id
+		and
+			I.item_id = #{value}
+	</select>
+	
+	<delete id="deleteItemById" parameterType="int">
+		delete from items
+		where 
+			item_id = #{value}
+	</delete>
+	
+
+	<update id="updateItem" parameterType="Item">
+		update items
+		set
+			item_option			= #{options},
+			initial_quantity	= #{initialQuantity},
+			saled_quantity		= #{saledQuantity},
+			product_id			= #{product.id},
+			item_original_price	= #{originalPrice},
+			item_sale_price		= #{salePrice}
+		where
+			item_id = #{id}
+	</update>
+	
+
+	<select id="getItemListByProductNo" parameterType="int" resultType="Item">
+      select
+         item_id            as id,
+         item_option         as options,
+         initial_quantity   as initialQuantity,
+         saled_quantity      as saledQuantity,
+         product_id         as "product.id",
+         item_original_price   as originalPrice,
+         item_sale_price      as salePrice,
+         image_id         as "image.id",
+         item_createdate      as createdate
+      from
+         items
+      where
+         product_id = #{value}
+   </select>
+   
+   <select id="getItemsForIndex" parameterType="int" resultType="Item">
+		select 
+			item_id				as id,
+			item_option			as options,
+			initial_quantity	as initialQuantity,
+			saled_quantity		as saledQuantity,
+			item_original_price	as originalPrice,
+			item_sale_price		as salePrice,
+			item_createdate		as createdate,
+			product_name		as "product.name",
+			product_show		as "product.show",
+			product_createdate	as "product.createDate",
+			company_id			as "product.id",
+			small_category_name	as "product.smallCategory.name"
+		from(
+			select 
+				row_number() over(order by item_id desc)rn,
+				I.item_id,
+				I.item_option,
+				I.initial_quantity,
+				I.saled_quantity,
+				I.item_original_price,
+				I.item_sale_price,
+				I.item_createdate,
+				P.product_name,
+				P.product_show,
+				P.product_createdate,
+				P.company_id,
+				SC.small_category_name
+			from
+				items I, products P, small_categories SC
+			where
+				P.small_category_id = SC.small_category_id
+			and
+				P.product_id = I.product_id
+			and
+				P.company_id = #{companyId}
+			)
+			where rn >= 1 and rn &lt;= 6
+	</select>
+
+	<update id="updateQty" parameterType="int">
+		update items
+		set
+			saled_quantity		= saled_quantity + #{qty}
+		where
+			item_id = #{id}
+	</update>
+</mapper>

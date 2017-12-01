@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.privatedeal.mappers.PrivatedealMapper">	
+	
+	<insert id="addPrivatedeal" parameterType="Privatedeal">
+		insert into privatedeal_board
+		(board_id, board_title, board_desired_price, board_contents, board_type, board_division, board_writer, small_category_id)
+		values
+		(pd_board_seq.nextval, #{title}, #{desiredprice,jdbcType=NUMERIC}, #{contents,jdbcType=CLOB}, #{type.id}, #{division.id}, #{customer.id}, #{smallcategory.id})
+	</insert>
+	
+	<select id="getTotalRows" parameterType="Criteria" resultType="int">
+		select
+			count(*)
+		from
+			privatedeal_board P, customers C, small_categories S, middle_categories M, big_categories B
+		where
+			P.board_deleted = 'N'
+		and P.board_writer = C.customer_id
+		and P.small_category_id = S.small_category_id
+		and S.middle_category_id = M.middle_category_id
+		and M.big_category_id = B.big_category_id
+		and P.board_type = #{type}
+		<if test="bc != null">
+			and B.big_category_id = #{bc}
+		</if>
+		<if test="mc != null">
+			and M.middle_category_id = #{mc}
+		</if>
+		<if test="sc != null">
+			and S.small_category_id = #{sc}
+		</if>
+		<if test="division != null and division !=''">
+			and P.board_division = #{division}
+		</if>		
+		<if test="keyword != ''">
+			<choose>
+				<when test="opt == 'title'">
+					and P.board_title like '%' || #{keyword} || '%'
+				</when>
+				<when test="opt == 'writer'">
+					and C.customer_nickname like '%' || #{keyword} || '%'
+				</when>
+				<when test="opt == 'contents'">
+					and P.board_contents like '%' || #{keyword} || '%'
+				</when>
+			</choose>
+		</if>
+	</select>
+	
+	<select id="getPrivateDeals" parameterType="Criteria" resultType="Privatedeal">
+		select
+			P.board_id					as id,
+			P.board_title				as title,
+			P.board_desired_price		as desiredprice,
+			P.board_createdate			as createdate,
+			P.board_status				as "status.id",
+			P.status_name				as "status.name",
+			P.board_clicked				as clicked,
+			P.board_division			as "division.id",
+			P.division_name				as "division.name",
+			P.customer_nickname			as "customer.nickname",
+			C.cnt						as commentCnt		
+		from (		
+			select
+				row_number() over (order by board_id desc) rn,
+				P.board_id,
+				P.board_title,
+				P.board_desired_price,
+				P.board_createdate,
+				P.board_status,
+				S.code_name		as status_name,
+				P.board_clicked,
+				P.board_division,
+				D.code_name		as division_name,			
+				C.customer_nickname
+			from
+				privatedeal_board P, codes S, codes D, customers C, small_categories S, middle_categories M, big_categories B
+			where
+				P.board_status = S.code_id
+			and P.board_division = D.code_id
+			and P.board_writer = C.customer_id
+			and P.small_category_id = S.small_category_id
+			and S.middle_category_id = M.middle_category_id
+			and M.big_category_id = B.big_category_id
+			and P.board_deleted = 'N'
+			and P.board_type = #{type}
+			<if test="bc != null">
+				and B.big_category_id = #{bc}
+			</if>
+			<if test="mc != null">
+				and M.middle_category_id = #{mc}
+			</if>
+			<if test="sc != null">
+				and S.small_category_id = #{sc}
+			</if>
+			<if test="division != null and division !=''">				
+				and P.board_division = #{division}
+			</if>
+			<if test="keyword != ''">
+				<choose>
+					<when test="opt == 'title'">
+						and P.board_title like '%' || #{keyword} || '%'
+					</when>
+					<when test="opt == 'writer'">
+						and C.customer_nickname like '%' || #{keyword} || '%'
+					</when>
+					<when test="opt == 'contents'">
+						and P.board_contents like '%' || #{keyword} || '%'
+					</when>
+				</choose>
+			</if>
+		) P, (select count(*) cnt, P.board_id from privatedeal_board P, privatedeal_comments C where P.board_id = C.board_id and C.comment_deleted = 'N' group by P.board_id) C		
+		where
+			rn >= #{beginIndex} and rn &lt;= #{endIndex}
+		and P.board_id = C.board_id(+)		
+		order by
+			P.board_id desc
+	</select>	
+	
+	<select id="getBoardByNo" parameterType="int" resultType="Privatedeal">
+		select
+			C.customer_username		as "customer.usernameSubstring",
+			C.customer_nickname		as "customer.nickname",
+			P.board_division		as "division.id",		
+			D.code_name				as "division.name",
+			S.code_name				as "status.name",
+			P.board_status			as "status.id",
+			P.board_desired_price	as desiredprice,
+			P.board_clicked			as clicked,
+			P.board_title			as title,
+			P.board_createdate		as createdate,
+			P.board_contents		as contents,
+			P.small_category_id		as "smallcategory.id",
+			P.board_writer			as "customer.id",
+			P.board_id				as id
+		from
+			privatedeal_board P, customers C, codes D, codes S
+		where
+			P.board_writer = C.customer_id
+		and P.board_division = D.code_id
+		and P.board_status = S.code_id
+		and P.board_deleted = 'N'
+		and P.board_id = #{value}
+	</select>
+	
+	<update id="clickedPlusByBoardNo" parameterType="int">
+		update 
+			privatedeal_board
+		set
+			board_clicked = board_clicked + 1
+		where
+			board_id = #{value}
+	</update>
+	
+	<update id="dpiUpdate" parameterType="int">
+		update
+			privatedeal_board
+		set
+			board_status = 'DPI'
+		where
+			board_id = #{value}
+	</update>
+	
+	<update id="diUpdate" parameterType="int">
+		update
+			privatedeal_board
+		set
+			board_status = 'DI'
+		where
+			board_id = #{value}
+	</update>
+	
+	<update id="dcUpdate" parameterType="int">
+		update
+			privatedeal_board
+		set
+			board_status = 'DC'
+		where
+			board_id = #{value}
+	</update>
+	
+	<delete id="deleteBoard" parameterType="int">
+		update
+			privatedeal_board
+		set
+			board_deleted = 'Y'
+		where
+			board_id = #{value}
+	</delete>
+	
+	<update id="modifyBoard" parameterType="Privatedeal">
+		update
+			privatedeal_board
+		set
+			board_title = #{title},
+			board_desired_price = #{desiredprice,jdbcType=NUMERIC},
+			board_contents = #{contents,jdbcType=CLOB},
+			board_division = #{division.id},
+			small_category_id = #{smallcategory.id}
+		where
+			board_id = #{id}
+	</update>
+	
+	<select id="getCommentSeq" resultType="int">
+		select
+			pd_comment_seq.nextval
+		from
+			dual	
+	</select>
+	
+	<insert id="addComment" parameterType="Comment">
+		insert into privatedeal_comments
+		(comment_id, comment_writer, comment_contents, replied_id, board_id, group_id)
+		values
+		(#{id}, #{customer.id}, #{comment}, #{repliedId.id}, #{boardId.id}, #{groupId.id})
+	</insert>
+	
+	<select id="getCommentsByBoardNo" parameterType="int" resultType="Comment">
+		select
+			P.comment_id			as "id",
+			C.customer_nickname		as "customer.nickname",
+			P.comment_writer		as "customer.id",
+			P.comment_createdate	as createdate,
+			P.comment_contents		as "comment",
+			P.replied_id			as "repliedId.id",
+			C2.customer_nickname	as "repliedId.customer.nickname",
+			P.comment_deleted		as deleted,
+			(select count(*) from privatedeal_comments where group_id = P.group_id) as groupIdCount			
+		from
+			privatedeal_comments P, customers C, privatedeal_comments R, customers C2
+		where
+			P.board_id = #{value}		
+		and P.comment_writer = C.customer_id
+		and P.replied_id = R.comment_id
+		and R.comment_writer = C2.customer_id		
+		order by
+			P.group_id asc, P.comment_id asc
+	</select>
+	
+	<select id="getRepliedRootId" parameterType="Comment" resultType="int">
+		select
+			group_id
+		from
+			privatedeal_comments
+		where			
+			comment_id = #{id}
+	</select>
+	
+	<select id="getRepliedNickName" parameterType="Comment" resultType="Customer">
+		select
+			C.customer_nickname		as nickname
+		from
+			privatedeal_comments P, customers C
+		where
+			P.comment_writer = C.customer_id
+		and P.comment_id = #{id}
+	</select>
+	
+	<delete id="deleteComment" parameterType="int">
+		update
+			privatedeal_comments
+		set
+			comment_deleted = 'Y'			
+		where
+			comment_id = #{value}
+	</delete>
+	<delete id="deleteReply" parameterType="int">
+		update
+			privatedeal_comments
+		set
+			comment_deleted = 'Y',
+			group_id = null
+		where
+			comment_id = #{value}
+	</delete>
+	
+	<select id="getComment" parameterType="int" resultType="Comment">
+		select
+			P.comment_id				as id,
+			P.comment_createdate		as createdate,
+			C.customer_nickname			as "customer.nickname",
+			P.comment_contents			as "comment",
+			P.replied_id				as "repliedId.id",
+			P.comment_deleted			as "deleted",
+			C2.customer_nickname		as "repliedId.customer.nickname"			
+		from
+			privatedeal_comments P, customers C, privatedeal_comments R, customers C2
+		where
+			P.comment_writer = C.customer_id
+		and P.replied_id = R.comment_id
+		and R.comment_writer = C2.customer_id
+		and	P.comment_id = #{value}
+	</select>
+	
+	<update id="modifyComment" parameterType="Comment">
+		update
+			privatedeal_comments
+		set
+			comment_contents = #{comment},
+			comment_createdate = sysdate
+		where
+			comment_id = #{id}
+	</update>
+	
+	<select id="getCommentCountByBoardNo" parameterType="int" resultType="int">
+		select
+			count(*)
+		from
+			privatedeal_comments
+		where 
+			board_id = #{value}
+		and comment_deleted = 'N'		
+	</select>
+	
+</mapper>

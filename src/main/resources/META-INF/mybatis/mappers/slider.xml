@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.sliders.mappers.SliderMapper">
+
+	<resultMap type="SliderInformation" id="information">
+      <result property="slider.id"  column="SLIDER_ID"/>
+      <result property="slider.startDate"  column="SLIDER_START_DATE"/>
+      <result property="slider.endDate"  column="SLIDER_END_DATE"/>
+      <result property="slider.deleted"  column="SLIDER_DELETED"/>
+      <result property="slider.type"  column="SLIDER_TYPE"/>
+      <result property="product.id"  column="PRODUCT_ID"/>
+      <result property="product.image.id"  column="IMAGE_ID"/>
+      <result property="product.name"  column="PRODUCT_NAME"/>
+      <result property="product.image.path"  column="IMAGE_PATH"/>
+      <result property="showingPrice" column="SHOWING_PRICE"/>
+      <result property="initialQty" column="initialQty"/>
+      <result property="saledQty" column="saledQty"/>
+	</resultMap>
+
+	<select id="getSliderSeq" resultType="int">
+		select slider_seq.nextval from dual
+	</select>
+	
+	<insert id="addSlider" parameterType="Slider">
+		insert into sliders
+		(slider_id, slider_start_date, slider_end_date, slider_type)
+		values
+		(#{id}, #{startDate}, #{endDate}, #{type})
+	</insert>
+	
+	<insert id="addSliderInfo" parameterType="SliderInformation">
+		insert into slider_informations
+		(slider_id, product_id)
+		values
+		(#{slider.id}, #{product.id})
+	</insert>
+	
+	<select id="getSliders" resultType="Slider">
+		select 
+			slider_id					as id,
+			slider_start_date		as startDate,
+			slider_end_date		as endDate,
+			slider_type				as type
+		from
+			sliders
+		where
+			slider_deleted = 'N'
+	</select>
+	
+	<select id="getSliderInfoById" parameterType="int" resultType="SliderInformation">
+		select 
+			S.slider_id						as id,
+			P.product_id				as "product.id",
+			P.product_name			as "product.name",
+			P.small_category_id		as "product.smallCategory.id",
+			C.company_name		as "product.company.name"
+		from
+			slider_informations S, products P, companies C
+		where
+			S.product_id = P.product_id
+			and P.company_id = C.company_id
+			and P.product_show = 'Y'
+			and slider_id = #{value}
+	</select>
+	
+	<select id="getSliderById" parameterType="int" resultType="Slider">
+		select 
+			slider_id					as id,
+			slider_start_date		as startDate,
+			slider_end_date		as endDate,
+			slider_type				as type
+		from
+			sliders
+		where
+			slider_deleted = 'N'
+			and slider_id = #{value}
+	</select>
+	
+	<update id="deleteSlider" parameterType="int">
+		update
+			sliders
+		set
+			slider_deleted = 'Y'
+		where slider_id = #{value}
+	</update>
+	
+	<select id="getTodayMainSliderInformations" resultType="map" resultMap="information">
+select *
+from (select min(item_sale_price) as showing_price, product_id
+      	from items 
+    	  group by product_id) A, products B, SLIDER_INFORMATIONS C, SLIDERS S, images I, (select sum(saled_quantity) as saledQty, sum(initial_quantity) as initialQty, product_id from items group by product_id) D
+where A.product_id = B.product_id
+and B.product_id = C.PRODUCT_ID
+and C.SLIDER_ID = S.SLIDER_ID
+and sysdate between s.slider_start_date and s.slider_end_date
+and s.slider_deleted = 'N'
+and s.slider_type='메인'
+and I.image_id = B.image_id
+and B.PRODUCT_ID = D.PRODUCT_ID
+	</select>
+	<select id="getTodayBests" resultType="map" resultMap="information">
+select *
+from (select min(item_sale_price) as showing_price, product_id
+      	from items 
+    	  group by product_id) A, products B, SLIDER_INFORMATIONS C, SLIDERS S, images I, (select sum(saled_quantity) as saledQty, sum(initial_quantity) as initialQty, product_id from items group by product_id) D
+where A.product_id = B.product_id
+and B.product_id = C.PRODUCT_ID
+and C.SLIDER_ID = S.SLIDER_ID
+and sysdate between s.slider_start_date and s.slider_end_date
+and s.slider_deleted = 'N'
+and s.slider_type='베스트'
+and I.image_id = B.image_id
+and B.PRODUCT_ID = D.PRODUCT_ID
+	</select>
+	
+	<select id="getTodayNewArrivals" resultType="map" resultMap="information">
+select *
+from (select min(item_sale_price) as showing_price, product_id
+      	from items 
+    	  group by product_id) A, products B, SLIDER_INFORMATIONS C, SLIDERS S, images I, (select sum(saled_quantity) as saledQty, sum(initial_quantity) as initialQty, product_id from items group by product_id) D
+where A.product_id = B.product_id
+and B.product_id = C.PRODUCT_ID
+and C.SLIDER_ID = S.SLIDER_ID
+and sysdate between s.slider_start_date and s.slider_end_date
+and s.slider_deleted = 'N'
+and s.slider_type='신상품'
+and I.image_id = B.image_id
+and B.PRODUCT_ID = D.PRODUCT_ID
+	</select>
+	
+	<select id="getTodayPopulars" resultType="map" resultMap="information">
+select *
+from (select min(item_sale_price) as showing_price, product_id
+      	from items 
+    	  group by product_id) A, products B, SLIDER_INFORMATIONS C, SLIDERS S, images I, (select sum(saled_quantity) as saledQty, sum(initial_quantity) as initialQty, product_id from items group by product_id) D
+where A.product_id = B.product_id
+and B.product_id = C.PRODUCT_ID
+and C.SLIDER_ID = S.SLIDER_ID
+and sysdate between s.slider_start_date and s.slider_end_date
+and s.slider_deleted = 'N'
+and s.slider_type='인기'
+and I.image_id = B.image_id
+and B.PRODUCT_ID = D.PRODUCT_ID
+	</select>
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

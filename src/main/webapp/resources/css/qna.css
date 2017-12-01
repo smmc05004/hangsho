@@ -1,0 +1,25 @@
+ a {
+        color: black;
+    }
+    #star {
+        color: red;
+    }
+    #span-span {
+        color: aqua;
+    }
+    .custom-block{
+        display:inline-block !important;
+    }
+    .col-sm-2{
+        min-width:210px;
+    }
+    .panel{
+        min-width: 197px;
+    }
+    #detail {
+        color: gray;
+    }
+    #question-btn{
+        background : orange;
+        color: white;
+    }

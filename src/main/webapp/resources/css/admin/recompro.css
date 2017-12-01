@@ -1,0 +1,10 @@
+#body-container-body>div:first-child {margin-top: 50px;}
+.listtable {overflow-y: scroll; height: 550px; border: 1px solid #e6e6e6;}
+.selecttable {overflow-y: scroll; height: 550px; border: 1px solid #e6e6e6;}
+th {background-color: #e6e6e6; text-align: center;}
+.searchform {margin-top: 15px; margin-bottom: 15px;}
+.prolist {position: relative;}
+.list-title {font-size: 20px; text-align: right; color: #333;}
+#btn-sumbit-02 {margin-top: 15px;}
+.btn-recom {text-align: center; margin-top: 350px;}
+.btn-recom a {margin-bottom: 5px;}

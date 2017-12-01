@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.privatedeal.mappers.RequestMapper">
+	
+	<insert id="addRequest" parameterType="Request">
+		insert into privatedeal_requests
+		(request_id, request_contents, request_desired_price, board_id, request_requestor, request_division)
+		values
+		(pd_request_seq.nextval, #{contents}, #{desiredPrice,jdbcType=NUMERIC}, #{board.id}, #{requestor.id},  #{division.id})
+	</insert>
+	
+	<select id="getRequest" parameterType="int" resultType="Request">
+		select
+			request_id			as id,
+			request_requestor	as "requestor.id",
+			request_division	as "division.id"
+		from
+			privatedeal_requests
+		where
+			request_id = #{value}
+	</select>
+	
+	<delete id="cancelRequest" parameterType="int">
+		update
+			privatedeal_requests
+		set
+			request_cancel = 'Y'
+		where
+			request_id = #{value}
+	</delete>
+	
+	<select id="getTotalRowsRequest" parameterType="int" resultType="int">
+		select
+			count(*)
+		from
+			privatedeal_requests
+		where
+			board_id = #{value}
+		and request_cancel = 'N'
+		and request_status = 'H'
+	</select>
+	
+	<select id="getRequestListByBoardNo" parameterType="Pagination" resultType="Request">
+		select
+			request_id					as id,
+			request_contents			as contents,
+			request_createdate			as createdate,
+			request_desired_price		as desiredPrice,
+			customer_nickname			as "requestor.nickname"
+		from (		
+			select
+				row_number() over (order by R.request_id desc) rn,
+				R.request_id,			
+				R.request_contents,			
+				R.request_createdate,		
+				R.request_desired_price,	
+				C.customer_nickname		
+			from
+				privatedeal_requests R, customers C
+			where
+				R.board_id = #{boardNo}
+			and R.request_cancel = 'N'
+			and R.request_status = 'H'
+			and R.request_requestor = C.customer_id
+		)
+		where
+			rn >= #{beginIndex} and rn &lt;= #{endIndex}
+	</select>
+	
+	<update id="denyRequest" parameterType="int">
+		update
+			privatedeal_requests
+		set
+			request_status = 'D'
+		where
+			request_id = #{value}
+	</update>
+	
+	<update id="approveRequest" parameterType="int">
+		update
+			privatedeal_requests
+		set
+			request_status = 'P'
+		where
+			request_id = #{value}
+	</update>
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

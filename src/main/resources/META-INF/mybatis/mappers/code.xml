@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.web.code.mapper.CodeMapper">
+
+
+	<select id="getCode" resultType="string">
+		select code
+		from admin_codes
+		where to_date(createdate) = to_date(sysdate)
+	</select>
+	
+	<insert id="addCode" parameterType="string">
+		insert into admin_codes(code)
+		values (#{code})
+	</insert>
+	
+	
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

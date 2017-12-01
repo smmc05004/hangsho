@@ -1,0 +1,70 @@
+a {
+        color: #333333;
+        text-decoration: none !important; 
+    }
+    .rating {
+        color: dodgerblue;
+    }
+    #product-body{margin-top:55px;}
+    #product-body .thumbnail img {
+        margin-bottom: 20px;
+    }
+    #body-new {
+        background-color: #f2f2f2;
+    }
+    #pro-category {
+        margin-top: 20px;
+    }
+    #body-new p:nth-child(2) {
+        color: #a6a6a6;
+        margin-bottom: 0px;
+        text-decoration: line-through;
+    }
+    ul {
+        padding: 0px;
+        z-index: 1;
+    }
+    li {
+        list-style: none;
+    }
+    #body-new button {
+        position: absolute;
+        left: 50px;
+        z-index: 100;
+    }
+    #body-main {
+        position: relative;
+        z-index: 1;
+    }
+    .flowbar {
+        position: absolute;
+        z-index: 20;
+        top: 0;
+        left: 50%;
+        width: 100px;
+        margin-left: 593px;
+        margin-top: 60px;
+    }
+    #star-recent {
+        margin-top: 30px;
+        margin-bottom: 10px;
+        
+    }
+    .flowbar img {
+        width: 80px;
+    }
+    .flowbar div {text-align: center;}
+    .flowbar div li {margin-bottom: 10px;}
+    .flowbar p {margin-top: 10px;}
+    .flow {
+        top:0;
+        position: fixed;
+    }   
+
+    
+
+#body-new .p-list{position: relative; width: 1129px; margin: 0 auto;}
+#body-new .bx-controls-direction .bx-prev{position: absolute; left: 0; top: 40%; text-indent: -9999px;display: inline-block;width: 36px;height: 36px;background: url(../image/sp-deallist-l.png) 0 0 no-repeat; z-index: 20;}
+#body-new .bx-controls-direction .bx-prev:hover{background: url(../image/sp-deallist-left.png); }
+#body-new .bx-controls-direction .bx-next{position: absolute; right: 0; top: 40%; text-indent: -9999px;display: inline-block;width: 36px;height: 36px;background: url(../image/sp-deallist-r.png) 0 0 no-repeat; z-index: 20;}
+#body-new .bx-controls-direction .bx-next:hover{background: url(../image/sp-deallist-right.png)}

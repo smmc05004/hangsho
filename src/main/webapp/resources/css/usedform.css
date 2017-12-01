@@ -1,0 +1,7 @@
+.meronaform th{font-weight: bold;padding-top: 9px !important; width: 100px; text-align: center;}
+.meronaform .titlei{width: 100%;}
+.meronaform select{height: 30px;width:80px;}
+.meronaform input{height: 30px;}
+.meronaform .category select{width: 150px;}
+.meronaform .hopeprice{font-weight: bold;}
+.meronaform .hopeprice input{text-align: right;}

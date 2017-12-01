@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.customers.mappers.CustomerDealMapper">
+
+	<select id="getTotalRows" parameterType="int" resultType="int">
+		select
+			count(*)
+		from
+			privatedeal_board
+		where
+			board_writer = #{value}
+		and board_deleted = 'N'
+		and board_division = 'S'
+	</select>
+
+	<!-- <select id="getSalesByCustomerNo" parameterType="int" resultType="Privatedeal">
+		select
+			P.board_id				as id,
+			P.board_title			as title,
+			P.board_createdate		as createdate,
+			P.board_status			as "status.id",
+			S.code_name				as "status.name",		
+			P.board_type			as "type.id",
+			T.code_name				as "type.name",
+			nvl(cnt, 0)				as requestCnt
+		from
+			(select
+				count(*) as cnt, P.board_id
+			 from
+				privatedeal_board P, privatedeal_requests R
+			 where
+				P.board_id = R.board_id
+			 and R.request_cancel = 'N'			 
+			 and R.request_status = 'H'
+			 and P.board_deleted = 'N'
+			 group by
+			 	P.board_id) Q,
+			privatedeal_board P, codes S, codes T
+		where
+			board_writer = #{value}
+		and	Q.board_id(+) = P.board_id
+		and board_division = 'S'
+		and P.board_status = S.code_id
+		and P.board_type = T.code_id
+		and P.board_deleted = 'N'
+		order by
+			P.board_id desc
+	</select>	 -->
+	
+	<select id="getSalesByCustomerNo" parameterType="Criteria" resultType="Privatedeal">
+		select
+			P.board_id				as id,
+			P.board_title			as title,
+			P.board_createdate		as createdate,
+			P.board_status			as "status.id",
+			P.status_name			as "status.name",		
+			P.board_type			as "type.id",
+			P.type_name				as "type.name",			
+			nvl(Q.cnt, 0)			as requestCnt
+		from (
+			select
+				row_number() over (order by board_id desc) rn,
+				P.board_id,
+				P.board_title,
+				P.board_createdate,
+				P.board_status,
+				S.code_name			as status_name,
+				P.board_type,
+				T.code_name			as type_name
+			from
+				privatedeal_board P, codes S, codes T
+			where
+				P.board_writer = #{customerNo}
+			and board_division = 'S'
+			and P.board_status = S.code_id
+			and P.board_type = T.code_id
+			and P.board_deleted = 'N'		
+		) P, (select count(*) as cnt, P.board_id
+		      from privatedeal_board P, privatedeal_requests R
+			  where
+				P.board_id = R.board_id
+			  and R.request_cancel = 'N'			 
+			  and R.request_status = 'H'
+			  and P.board_deleted = 'N'
+			  group by
+			  	P.board_id) Q
+		where
+			rn >= #{beginIndex} and rn &lt;= #{endIndex}
+		and P.board_id = Q.board_id(+)
+		order by
+			P.board_id desc
+	</select>
+	
+	<select id="getTotalRowsB" parameterType="int" resultType="int">
+		select
+			count(*)
+		from
+			privatedeal_board
+		where
+			board_writer = #{value}
+		and board_deleted = 'N'
+		and board_division = 'B'
+	</select>
+	
+	<select id="getBuyByCustomerNo" parameterType="Criteria" resultType="Privatedeal">
+		select
+			P.board_id				as id,
+			P.board_title			as title,
+			P.board_createdate		as createdate,
+			P.board_status			as "status.id",
+			P.status_name			as "status.name",		
+			P.board_type			as "type.id",
+			P.type_name				as "type.name",			
+			nvl(Q.cnt, 0)			as requestCnt
+		from (
+			select
+				row_number() over (order by board_id desc) rn,
+				P.board_id,
+				P.board_title,
+				P.board_createdate,
+				P.board_status,
+				S.code_name			as status_name,
+				P.board_type,
+				T.code_name			as type_name
+			from
+				privatedeal_board P, codes S, codes T
+			where
+				P.board_writer = #{customerNo}
+			and board_division = 'B'
+			and P.board_status = S.code_id
+			and P.board_type = T.code_id
+			and P.board_deleted = 'N'		
+		) P, (select count(*) as cnt, P.board_id
+		      from privatedeal_board P, privatedeal_requests R
+			  where
+				P.board_id = R.board_id
+			  and R.request_cancel = 'N'			 
+			  and R.request_status = 'H'
+			  and P.board_deleted = 'N'
+			  group by
+			  	P.board_id) Q
+		where
+			rn >= #{beginIndex} and rn &lt;= #{endIndex}
+		and P.board_id = Q.board_id(+)
+		order by
+			P.board_id desc
+	</select>
+	
+	<!-- <select id="getBuyByCustomerNo" parameterType="int" resultType="Privatedeal">
+		select
+			P.board_id				as id,
+			P.board_title			as title,			
+			P.board_createdate		as createdate,
+			P.board_status			as "status.id",
+			S.code_name				as "status.name",			
+			P.board_type			as "type.id",
+			T.code_name				as "type.name",
+			nvl(cnt, 0)				as requestCnt							
+		from
+			(select
+				count(*) as cnt, P.board_id
+			 from
+				privatedeal_board P, privatedeal_requests R
+			 where
+				P.board_id = R.board_id
+			 and R.request_cancel = 'N'
+			 and P.board_deleted = 'N'
+			 and R.request_status = 'H'
+			 group by
+			 	P.board_id) Q,
+			privatedeal_board P, codes S, codes T
+		where
+			board_writer = #{value}
+		and	Q.board_id(+) = P.board_id
+		and board_division = 'B'
+		and P.board_status = S.code_id
+		and P.board_type = T.code_id
+		and P.board_deleted = 'N'
+		order by
+			P.board_id desc
+	</select> -->
+	
+	<select id="getTotalRowsSR" parameterType="int" resultType="int">
+		select
+			count(*)
+		from
+			privatedeal_requests
+		where
+			request_requestor = #{value}
+		and request_cancel = 'N'
+		and request_division = 'S'
+	</select>
+	
+	<select id="getSaleRequestsByCustomerNo" parameterType="Criteria" resultType="Request">
+		select
+			request_id				as id,			
+			request_createdate		as createdate,
+			status_name				as "status.name",
+			type_name				as "type.name",
+			code_id					as "type.id",
+			board_title				as "board.title",
+			board_id				as "board.id"
+		from		
+			(select
+				row_number() over (order by request_id desc) rn,
+				R.request_id,			
+				R.request_createdate,	
+				S.code_name				as status_name,
+				T.code_name				as type_name,
+				T.code_id,				
+				P.board_title,			
+				P.board_id				
+			from
+				customers C, privatedeal_requests R, codes S, privatedeal_board P, codes T
+			where
+				C.customer_id = R.request_requestor
+			and R.request_status = S.code_id
+			and R.request_division = 'S'
+			and R.request_cancel = 'N'
+			and R.board_id = P.board_id
+			and P.board_type = T.code_id
+			and R.request_requestor = #{customerNo}
+			)	
+		where
+			rn >= #{beginIndex} and rn &lt;= #{endIndex}
+	</select>
+	
+	<select id="getTotalRowsBR" parameterType="int" resultType="int">
+		select
+			count(*)
+		from
+			privatedeal_requests
+		where
+			request_requestor = #{value}
+		and request_cancel = 'N'
+		and request_division = 'B'
+	</select>
+	
+	<select id="getBuyRequestsByCustomerNo" parameterType="Criteria" resultType="Request">
+		select
+			request_id				as id,			
+			request_createdate		as createdate,
+			status_name				as "status.name",
+			type_name				as "type.name",
+			code_id					as "type.id",
+			board_title				as "board.title",
+			board_id				as "board.id"
+		from		
+			(select
+				row_number() over (order by request_id desc) rn,
+				R.request_id,			
+				R.request_createdate,	
+				S.code_name				as status_name,
+				T.code_name				as type_name,
+				T.code_id,				
+				P.board_title,			
+				P.board_id				
+			from
+				customers C, privatedeal_requests R, codes S, privatedeal_board P, codes T
+			where
+				C.customer_id = R.request_requestor
+			and R.request_status = S.code_id
+			and R.request_division = 'B'
+			and R.request_cancel = 'N'
+			and R.board_id = P.board_id
+			and P.board_type = T.code_id
+			and R.request_requestor = #{customerNo}
+			)	
+		where
+			rn >= #{beginIndex} and rn &lt;= #{endIndex}
+	</select>
+	
+	<insert id="addDeal" parameterType="Deal">
+		insert into privatedeal_deals
+		(deal_id, board_id, deal_seller, deal_buyer)
+		values
+		(pd_deal_seq.nextval, #{board.id}, #{seller.id}, #{buyer.id})
+	</insert>
+	
+	<select id="getTotalRowsSL" parameterType="int" resultType="int">
+		select
+			count(*)
+		from
+			privatedeal_deals
+		where
+			deal_seller = #{value}
+		and deal_cancel = 'N'
+	</select>
+	
+	<select id="getSoldList" parameterType="Criteria" resultType="Deal">
+		select
+			deal_id				as id,
+			board_title			as "board.title",
+			deal_createdate		as createdate,
+			status_name			as "status.name",
+			type_name			as "type.name",
+			deal_cancel			as "cancel"
+		from
+			(	
+			select
+				row_number() over (order by deal_id desc) rn,
+				D.deal_id,			
+				B.board_title,		
+				D.deal_createdate,	
+				S.code_name			as status_name,
+				T.code_name			as type_name,
+				D.deal_cancel		
+			from
+				privatedeal_deals D, privatedeal_board B, codes T, codes S
+			where
+				D.deal_seller = #{customerNo}
+			and D.board_id = B.board_id
+			and B.board_type = T.code_id
+			and D.deal_status = S.code_id
+		)
+		where
+			rn >= #{beginIndex} and rn &lt;= #{endIndex}	
+	</select>
+	
+	<select id="getTotalRowsBL" parameterType="int" resultType="int">
+		select
+			count(*)
+		from
+			privatedeal_deals
+		where
+			deal_buyer = #{value}
+		and deal_cancel = 'N'
+	</select>
+	
+	<select id="getBoughtList" parameterType="Criteria" resultType="Deal">
+		select
+			deal_id				as id,
+			board_title			as "board.title",
+			deal_createdate		as createdate,
+			status_name			as "status.name",
+			type_name			as "type.name",
+			deal_cancel			as "cancel"
+		from
+			(	
+			select
+				row_number() over (order by deal_id desc) rn,
+				D.deal_id,			
+				B.board_title,		
+				D.deal_createdate,	
+				S.code_name			as status_name,
+				T.code_name			as type_name,
+				D.deal_cancel		
+			from
+				privatedeal_deals D, privatedeal_board B, codes T, codes S
+			where
+				D.deal_buyer = #{customerNo}
+			and D.board_id = B.board_id
+			and B.board_type = T.code_id
+			and D.deal_status = S.code_id
+		)
+		where
+			rn >= #{beginIndex} and rn &lt;= #{endIndex}
+	</select>
+	
+	<select id="getDealDetailByDealNo" parameterType="int" resultType="Deal">
+		select
+			D.deal_id					as id,
+			T.code_name					as "type.name",
+			B.board_id					as "board.id",
+			B.board_title				as "board.title",
+			D.deal_createdate			as createdate,
+			S.code_id					as "status.id",
+			D.deal_payment				as payment,
+			C1.customer_id				as "seller.id",
+			C1.customer_nickname		as "seller.nickname",
+			C1.customer_phonenumber		as "seller.phonenumber",
+			C1.customer_mainaddress		as "seller.mainaddress",
+			C1.customer_detailaddress	as "seller.detailaddress",
+			C2.customer_id				as "buyer.id",
+			C2.customer_nickname		as "buyer.nickname",
+			C2.customer_phonenumber		as "buyer.phonenumber",
+			C2.customer_mainaddress		as "buyer.mainaddress",
+			C2.customer_detailaddress	as "buyer.detailaddress",
+			D.deal_cancel				as "cancel",
+			D.api_key					as 	apiKey,
+			D.dsc_code					as dscCode,
+			D.deal_transport_number		as transportNumber
+		from
+			privatedeal_deals D, codes T, privatedeal_board B, codes S, customers C1, customers C2
+		where
+			D.deal_id = #{value}
+		and D.board_id = B.board_id
+		and T.code_id = B.board_type
+		and S.code_id = D.deal_status
+		and C1.customer_id = D.deal_seller
+		and C2.customer_id = D.deal_buyer
+	</select>
+	
+	<select id="getCashByBuyerId" parameterType="int" resultType="int">
+		select
+			customer_cash
+		from
+			customers
+		where
+			customer_id = #{value}
+	</select>
+	
+	<update id="payByDeal" parameterType="Deal">
+		update
+			customers
+		set
+			customer_cash = customer_cash - #{payment}
+		where
+			customer_id = #{buyer.id}
+	</update>
+	
+	<update id="paymentByDeal" parameterType="Deal">
+		update
+			privatedeal_deals
+		set
+			deal_status = 'PC',
+			deal_payment = #{payment}			
+		where
+			deal_id = #{id}
+	</update>
+	
+	<delete id="cancelDealByDealNo" parameterType="int">
+		update 
+			privatedeal_deals
+		set
+			deal_payment = 0,
+			deal_cancel = 'Y'
+		where
+			deal_id = #{value}
+	</delete>
+	
+	<update id="updateCash" parameterType="Deal">
+		update
+			customers
+		set
+			customer_cash = customer_cash + #{payment}
+		where
+			customer_id = #{buyer.id}
+	</update>
+	
+	<update id="prUpdate" parameterType="int">
+		update
+			privatedeal_deals
+		set
+			deal_status = 'PR'
+		where
+			deal_id = #{value}
+	</update>
+	
+	<update id="prcUpdate" parameterType="int">
+		update
+			privatedeal_deals
+		set
+			deal_status = 'PRC'
+		where
+			deal_id = #{value}
+	</update>
+	
+	<update id="productSend" parameterType="Deal">
+		update
+			privatedeal_deals
+		set
+			api_key = 'T87SEQohGbwuV4gs7LJAtQ',
+			dsc_code = #{dscCode},
+			deal_transport_number = #{transportNumber},
+			deal_status = 'SI'
+		where
+			deal_id = #{id}
+	</update>
+	
+	<update id="buyConfirm" parameterType="int">
+		update
+			privatedeal_deals
+		set
+			deal_status = 'BC'
+		where
+			deal_id = #{value}
+	</update>
+	
+	<update id="sellerCash" parameterType="Deal">
+		update
+			customers
+		set
+			customer_cash = customer_cash + #{payment}
+		where
+			customer_id = #{seller.id}
+	</update>	
+	
+</mapper>

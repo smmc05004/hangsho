@@ -1,0 +1,14 @@
+#chart_div {; width: 980px; height: 500px;}
+#line_chart_div {width: 980px; height: 500px;}
+#chart_year_div {width: 980px; height: 500px;}
+th {background-color: #e6e6e6;}
+.listtable {overflow-y: scroll; height: 212px; border: 1px solid #e6e6e6;}
+.searchform {margin-bottom: 20px;}
+.pagination a {color: #666 !important;}
+.pagination .active a{background-color: #5bc0de; color: #fff !important; border-color: #5bc0de;}
+.chartdiv {z-index: 1;}
+.main-div {position: relative; margin-top: 20px;}
+.inputdate {position: absolute; z-index: 1;}
+.form-con {padding-left: 75px !important;}
+.trbg {background-color: #f2f2f2;}
+.form-con-01 {padding-left: 96px !important; width: 245px !important;}

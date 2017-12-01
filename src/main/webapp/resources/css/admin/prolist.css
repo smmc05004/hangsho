@@ -1,0 +1,6 @@
+#body-container-body>div:first-child {margin-top: 50px;}
+th {background-color: #e6e6e6;}
+.complete {background-color: #f2f2f2}
+.listtable {border: 1px solid #e6e6e6;}
+.listtable table {margin: 0}
+.searchform {margin-bottom: 15px;}

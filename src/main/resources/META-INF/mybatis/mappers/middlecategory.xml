@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.categories.mappers.CategoryMapper">
+
+	<select id="getMidCategoryByNo" parameterType="int" resultType="MiddleCategory">
+		select
+			middle_category_id		as id,		
+			middle_category_name	as name		
+		from
+			middle_categories
+		where
+			big_category_id = #{value}
+	</select>
+	
+</mapper>
+	

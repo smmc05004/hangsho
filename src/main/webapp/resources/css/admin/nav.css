@@ -1,0 +1,7 @@
+#body-container {padding: 0;}
+#body-container-body {padding-left: 200px; padding-top: 50px;}
+.sidenav {padding-top: 100px;}
+.sidenav h3 {padding-left: 16px; margin-bottom: 30px;}
+a {text-decoration: none !important;}
+nav ul li:first-child {width: 200px; text-align: center;}
+.w3-sidebar {width: 200px;}

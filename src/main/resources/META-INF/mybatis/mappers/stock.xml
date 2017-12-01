@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.stock.mappers.StockMapper">
+
+	<insert id="accumulateStock" parameterType="Stock">
+		insert into product_stock_history
+			(item_id, product_history_quantity, reasons)
+		values
+			(#{item.id}, #{quantity}, #{reasons})
+	</insert>
+	
+	<select id="getStocksById" parameterType="int" resultType="Stock">
+		select
+			item_id						as "item.id",
+			product_history_quantity 	as quantity,
+			reasons						as reasons,
+			product_history_date		as historyDate
+		from
+			product_stock_history
+		where
+			item_id = #{value}
+	</select>
+	
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,36 @@
+    #service {
+       border: 1px solid gray;
+    }
+    #btn {
+        background: darkorange;
+        color: white;
+    }
+    #question-box{
+        padding-top: 10px;
+        height: 150px;
+        border: 5px solid darkgray;
+    }
+    #customer-center {
+        height: 130px;
+        width: 150px;
+    }
+    #accordion {
+        border: 1px solid gray;
+    }
+    #customer-center {
+        background: #00004d;
+        color: white;
+    }
+    a {
+        color: black;
+    }
+    #search {
+        padding-left: 70px;
+    }
+    #keyword {
+        color: orange;
+        font-weight: 1000;
+    }
+    #keyword-word{
+        color: #f2f2f2;
+    }

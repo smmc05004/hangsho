@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.carts.mappers.CartMapper">
+
+<select id="getItemLists" parameterType="Customer" resultType="CartDetail">
+	select 
+	cd.PRODUCT_QUANTITY		as "productQuantity",
+	cd.CART_ID						as "cart.id",
+	cd.ITEM_ID							as "item.id",
+	i.ITEM_OPTION					as "item.options",
+	i.INITIAL_QUANTITY			as "item.initialQuantity",
+	i.SALED_QUANTITY				as "item.saledQuantity",
+	i.PRODUCT_ID					as "item.product.id",
+	i.ITEM_ORIGINAL_PRICE		as "item.originalPrice",
+	i.ITEM_SALE_PRICE				as "item.salePrice",
+	i.IMAGE_ID							as	 "item.image.id",
+	i.ITEM_CREATEDATE			as "item.createdate",
+	img.image_id						as "item.product.image.id",
+	img.image_path					as "item.product.image.path",
+	p.product_name					as "item.product.name"
+	
+	from cart_details cd, carts c, items i, images img, products p
+	where cd.cart_id = c.cart_id
+	and cd.item_id = i.item_id
+	and c.customer_id = #{id}
+	and i.product_id = p.product_id
+	and img.image_id = i.image_id
+	order by i.product_id
+</select>
+
+<insert id="addNewCart" parameterType="Customer">
+	insert into carts(cart_id, customer_id)
+	values( cart_seq.nextval, #{id} )
+</insert>
+
+<insert id="addItemToCart" parameterType="CartDetail">
+	insert into cart_details(PRODUCT_QUANTITY, CART_ID, ITEM_ID)
+	values (#{productQuantity}, #{cart.id}, #{item.id} )
+</insert>
+
+<select id="getCartId" parameterType="Customer" resultType="int">
+	select
+		cart_id
+	from carts
+	where customer_id =#{id}
+</select>
+
+<delete id="deleteCart" parameterType="int">
+	delete from cart_details
+	where cart_id = #{value}
+</delete>
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

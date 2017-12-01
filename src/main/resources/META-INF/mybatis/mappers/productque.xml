@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.products.mappers.ProductQueMapper">
+
+	<select id="getSeq" resultType="int">
+		select
+			product_q_seq.nextval
+		from dual
+	</select>
+	
+	<insert id="addProductQue" parameterType="ProductQue">
+		insert into product_q
+		(product_q_id, product_q_question, product_id, customer_id, product_q_createdate, product_q_title)
+		values
+		(#{id}, #{question}, #{product.id}, #{customer.id}, sysdate, #{title})
+	</insert>
+	
+		<select id="getProductQuesByCustomer" resultType="ProductQue" parameterType="Customer">
+		select
+			PQ.product_q_id				as id,
+			PQ.product_q_question		as question,
+			PQ.product_id				as "product.id",
+			PQ.customer_id				as "customer.id",
+			PQ.product_q_createdate		as createDate,
+			PQ.product_q_deleted			as deleted,
+			PQ.product_q_title			as title,
+			P.product_name			as "product.name",
+			PQ.product_q_status	 as "status"
+		from
+			product_q PQ, customers C, products P
+		where 
+			PQ.customer_id = C.customer_id
+		and
+			C.customer_id = #{id}
+		and
+			PQ.product_q_deleted = 'N'
+		and
+			PQ.product_id = P.product_id
+		order by
+			PQ.product_q_id desc
+	</select>
+	
+	<select id="getProductQues" resultType="ProductQue">
+		select
+			P.product_q_id				as id,
+			P.product_q_question		as question,
+			P.product_id				as "product.id",
+			P.customer_id				as "customer.id",
+			P.product_q_createdate		as createDate,
+			P.product_q_deleted			as deleted,
+			P.product_q_title			as title,
+			P.product_q_status			as status,
+			C.customer_nickname			as "customer.nickname"
+			
+		from
+			product_q P, customers C
+		where 
+			P.customer_id = C.customer_id
+		and
+			P.product_q_deleted = 'N'
+		order by
+			P.product_q_id desc
+	</select>
+	
+	<select id="getProductQueById" parameterType="int" resultType="ProductQue">
+		select
+			product_q_id			as id,
+			product_q_question		as question,
+			product_id				as "product.id",
+			customer_id				as "customer.id",
+			product_q_createdate	as createDate,
+			product_q_deleted		as deleted,
+			product_q_title			as title,
+			product_q_status		as status
+		from
+			product_q
+		where
+			product_q_id = #{value}
+	</select>
+	
+	<select id="getTotalRows" parameterType="Criteria" resultType="int">
+		select
+			count(*)
+		from
+			product_q P, customers C
+		where 
+			P.customer_id = C.customer_id
+		and
+			P.product_q_deleted = 'N'
+		
+		<if test="keyword != ''">
+			<choose>
+				<when test="opt == 'title'">
+					and P.product_q_title like '%' || #{keyword} || '%'
+				</when>
+				<when test="opt == 'contents'">
+					and P.product_q_question like '%' || #{keyword} || '%'
+				</when>
+			</choose>
+		</if>
+	</select>
+	
+	<select id="getProductQuess" parameterType="Criteria" resultType="ProductQue">
+		select
+			product_q_id				as id,
+			product_q_question			as question,
+			product_id					as "product.id",
+			customer_id					as "customer.id",
+			product_q_createdate		as createDate,
+			product_q_deleted			as deleted,
+			product_q_title				as title,
+			product_q_status			as status,
+			customer_nickname			as "customer.nickname"
+		from (
+			select
+				row_number() over (order by product_q_id desc) rn,
+				P.product_q_id				,
+				P.product_q_question		,
+				P.product_id				,
+				P.customer_id				,
+				P.product_q_createdate		,
+				P.product_q_deleted			,
+				P.product_q_title			,
+				P.product_q_status			,
+				C.customer_nickname			
+				
+			from
+				product_q P, customers C
+			where 
+				P.customer_id = C.customer_id
+				and
+				P.product_q_deleted = 'N'
+				
+				<if test="keyword != ''">
+					<choose>
+						<when test="opt == 'title'">
+							and P.product_q_title like '%' || #{keyword} || '%'
+						</when>
+						<when test="opt == 'contents'">
+							and P.product_q_question like '%' || #{keyword} || '%'
+						</when>
+					</choose>
+				</if>
+			)
+		where rn >= #{beginIndex} and rn &lt;= #{endIndex}
+	</select>
+	
+	<select id="getProductQuessByProductId" parameterType="map" resultType="ProductQue">
+		select
+			product_q_id				as id,
+			product_q_question			as question,
+			product_id					as "product.id",
+			customer_id					as "customer.id",
+			product_q_createdate		as createDate,
+			product_q_deleted			as deleted,
+			product_q_title				as title,
+			product_q_status			as status,
+			customer_nickname			as "customer.nickname"
+		from (
+			select
+				row_number() over (order by product_q_id desc) rn,
+				P.product_q_id				,
+				P.product_q_question		,
+				P.product_id				,
+				P.customer_id				,
+				P.product_q_createdate		,
+				P.product_q_deleted			,
+				P.product_q_title			,
+				P.product_q_status			,
+				C.customer_nickname			
+				
+			from
+				product_q P, customers C
+			where 
+				P.customer_id = C.customer_id
+				and
+				P.product_q_deleted = 'N'
+				and
+				P.product_id = #{productId}
+				
+				<if test="criteria.keyword != null">
+					<choose>
+						<when test="criteria.opt == 'title'">
+							and P.product_q_title like '%' || #{criteria.keyword} || '%'
+						</when>
+						<when test="criteria.opt == 'contents'">
+							and P.product_q_question like '%' || #{criteria.keyword} || '%'
+						</when>
+					</choose>
+				</if>
+			)
+		where rn >= #{criteria.beginIndex} and rn &lt;= #{criteria.endIndex}
+	</select>
+	
+	<select id="getTotalRowsByProductId" parameterType="map" resultType="int">
+		select
+			count(*)
+		from
+			product_q P, customers C
+		where 
+			P.customer_id = C.customer_id
+		and
+			P.product_q_deleted = 'N'
+		and 
+			P.product_id = #{productId}
+		
+		<if test="criteria.keyword != null">
+			<choose>
+				<when test="criteria.opt == 'title'">
+					and P.product_q_title like '%' || #{criteria.keyword} || '%'
+				</when>
+				<when test="criteria.opt == 'contents'">
+					and P.product_q_question like '%' || #{criteria.keyword} || '%'
+				</when>
+			</choose>
+		</if>
+	</select>
+	
+	<select id="getProductQuessByComapnyId" parameterType="map" resultType="ProductQue">
+		select
+			product_q_id				as id,
+			product_q_question			as question,
+			product_id					as "product.id",
+			product_name				as "product.name",
+			customer_id					as "customer.id",
+			product_q_createdate		as createDate,
+			product_q_deleted			as deleted,
+			product_q_title				as title,
+			product_q_status			as status,
+			customer_nickname			as "customer.nickname"
+		from (
+			select
+				row_number() over (order by product_q_id desc) rn,
+				Q.product_q_id				,
+				Q.product_q_question		,
+				Q.product_id				,
+				P.product_name				,
+				Q.customer_id				,
+				Q.product_q_createdate		,
+				Q.product_q_deleted			,
+				Q.product_q_title			,
+				Q.product_q_status			,
+				C.customer_nickname			
+			from
+				product_q Q, customers C, products P
+			where 
+				Q.customer_id = C.customer_id
+			and 
+				P.product_id = Q.product_id
+			and
+				Q.product_q_deleted = 'N'
+			and 
+				P.company_id = #{companyId}
+				<if test="criteria.keyword != null">
+					<choose>
+						<when test="criteria.opt == 'title'">
+							and product_q_title like '%' || #{criteria.keyword} || '%'
+						</when>
+						<when test="criteria.opt == 'productName'">
+							and product_name like '%' || #{criteria.keyword} || '%'
+						</when>
+					</choose>
+				</if>
+			)
+		where rn >= #{criteria.beginIndex} and rn &lt;= #{criteria.endIndex}
+	</select>
+	
+	<select id="getTotalRowsByCompanyId" parameterType="map" resultType="int">
+		select
+			count(*)
+		from
+			product_q Q, customers C, products P
+		where 
+			Q.customer_id = C.customer_id
+		and 
+			P.product_id = Q.product_id
+		and
+			Q.product_q_deleted = 'N'
+		and 
+			P.company_id = #{companyId}
+			<if test="criteria.keyword != null">
+				<choose>
+					<when test="criteria.opt == 'title'">
+						and product_q_title like '%' || #{criteria.keyword} || '%'
+					</when>
+					<when test="criteria.opt == 'productName'">
+						and product_name like '%' || #{criteria.keyword} || '%'
+					</when>
+				</choose>
+			</if>	
+	</select>
+
+	<update id="updateProductQue" parameterType="ProductQue">
+		update product_q
+		set
+			product_q_status = #{status}
+		where	
+			product_q_id = #{id}
+	</update>
+	
+	<select id="getProductQuessForIndex" parameterType="int" resultType="ProductQue">
+		select
+			product_q_id				as id,
+			product_q_question			as question,
+			product_id					as "product.id",
+			product_name			as "product.name",
+			customer_id					as "customer.id",
+			product_q_createdate		as createDate,
+			product_q_deleted			as deleted,
+			product_q_title				as title,
+			product_q_status			as status,
+			customer_nickname			as "customer.nickname"
+		from (
+			select
+				row_number() over (order by product_q_id desc) rn,
+				Q.product_q_id				,
+				Q.product_q_question		,
+				Q.product_id				,
+				P.product_name				,
+				Q.customer_id				,
+				Q.product_q_createdate		,
+				Q.product_q_deleted			,
+				Q.product_q_title			,
+				Q.product_q_status			,
+				C.customer_nickname			
+			from
+				product_q Q, customers C, products P
+			where 
+				Q.customer_id = C.customer_id
+			and 
+				P.product_id = Q.product_id
+			and
+				Q.product_q_deleted = 'N'
+			and 
+				P.company_id = #{companyId}
+			)
+		where rn >= 1 and rn &lt;= 6
+	</select>
+	
+</mapper>
+
+

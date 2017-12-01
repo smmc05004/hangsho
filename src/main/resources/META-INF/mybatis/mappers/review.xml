@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.review.mappers.ReviewMapper">
+<!-- 
+	<select id="getReviewsByProductId" parameterType="int" resultType="Review">
+		select
+			R.review_id				as id,
+			R.review_comment		as "comment",
+			R.review_createdate		as createDate,
+			R.review_rates			as rates,
+			R.product_id			as "product.id",
+			R.customer_id			as "customer.nickname",
+			C.customer_username		as "customer.id",
+			R.review_deleted		as deleted
+		from
+			product_review R, customers C
+		where 
+			product_id = #{value}
+	</select>
+	 -->
+	 
+	 <select id="getReviewsByMap" parameterType="map" resultType="Review">
+	 	SELECT
+			REVIEW_ID			as id,
+			REVIEW_COMMENT		as "comment",
+			REVIEW_CREATEDATE	as createDate,
+			REVIEW_RATES		as rates,
+			PRODUCT_ID			as "product.id",
+			CUSTOMER_ID			as "customer.id",
+			REVIEW_DELETED		as deleted,
+			CUSTOMER_USERNAME	as "customer.username",
+			PRODUCT_NAME		as "product.name"
+		FROM( 
+			select row_number() over(ORDER BY PR.REVIEW_ID DESC) rn,
+			PR.REVIEW_ID			,
+			PR.REVIEW_COMMENT		,
+			PR.REVIEW_CREATEDATE	,
+			PR.REVIEW_RATES			,
+			PR.PRODUCT_ID			,
+			PR.CUSTOMER_ID			,
+			PR.REVIEW_DELETED		,
+			C.CUSTOMER_USERNAME		,
+			P.PRODUCT_NAME			
+		from
+			PRODUCT_REVIEW PR, PRODUCTS P, CUSTOMERS C
+		WHERE
+			PR.PRODUCT_ID = P.PRODUCT_ID
+		AND
+			PR.CUSTOMER_ID = C.CUSTOMER_ID
+		AND
+			P.COMPANY_ID = #{companyId}
+			<if test="criteria.keyword != ''">
+				<choose>
+					<when test="criteria.opt == 'productName'">
+						and PRODUCT_NAME like '%' || #{criteria.keyword} || '%'
+					</when>
+					<when test="criteria.opt == 'comment'">
+						and REVIEW_COMMENT like '%' || #{criteria.keyword} || '%'
+					</when>
+				</choose>
+			</if>
+			<if test="criteria.beginday != null">
+				and product_createdate &gt; #{criteria.beginday}
+			</if>
+			<if test="criteria.endday != null">
+				and product_createdate &lt; #{criteria.endday} + 1
+			</if>
+		)where rn >= #{criteria.beginIndex} and rn &lt;= #{criteria.endIndex}
+	 </select>
+	 
+	 <select id="getTotalRowsByMap" parameterType="map" resultType="int">
+	 	SELECT 
+	 		count(*)
+		from
+			PRODUCT_REVIEW PR, PRODUCTS P, CUSTOMERS C
+		WHERE
+			PR.PRODUCT_ID = P.PRODUCT_ID
+		AND
+			PR.CUSTOMER_ID = C.CUSTOMER_ID
+		AND
+			P.COMPANY_ID = #{companyId}
+			<if test="criteria.keyword != ''">
+				<choose>
+					<when test="criteria.opt == 'productName'">
+						and PRODUCT_NAME like '%' || #{criteria.keyword} || '%'
+					</when>
+					<when test="criteria.opt == 'comment'">
+						and REVIEW_COMMENT like '%' || #{criteria.keyword} || '%'
+					</when>
+				</choose>
+			</if>
+			<if test="criteria.beginday != null">
+				and product_createdate &gt; #{criteria.beginday}
+			</if>
+			<if test="criteria.endday != null">
+				and product_createdate &lt; #{criteria.endday} + 1
+			</if>
+	 </select>
+	 
+	 <select id="getReviewsForIndex" parameterType="int" resultType="Review">
+	 	SELECT
+			REVIEW_ID			as id,
+			REVIEW_COMMENT		as "comment",
+			REVIEW_CREATEDATE	as createDate,
+			REVIEW_RATES		as rates,
+			PRODUCT_ID			as "product.id",
+			CUSTOMER_ID			as "customer.id",
+			REVIEW_DELETED		as deleted,
+			CUSTOMER_USERNAME	as "customer.username",
+			PRODUCT_NAME		as "product.name"
+		FROM(
+		 	SELECT
+			 	row_number() over(order by review_id desc)rn,
+				PR.REVIEW_ID			,
+				PR.REVIEW_COMMENT		,
+				PR.REVIEW_CREATEDATE	,
+				PR.REVIEW_RATES			,
+				PR.PRODUCT_ID			,
+				PR.CUSTOMER_ID			,
+				PR.REVIEW_DELETED		,
+				C.CUSTOMER_USERNAME		,
+				P.PRODUCT_NAME			
+			FROM
+				PRODUCT_REVIEW PR, PRODUCTS P, CUSTOMERS C
+			WHERE
+				PR.PRODUCT_ID = P.PRODUCT_ID
+			AND
+				PR.CUSTOMER_ID = C.CUSTOMER_ID
+			AND
+				P.COMPANY_ID = #{companyId}
+			)
+		WHERE rn >= 1 and rn &lt;= 6
+	 </select>
+	 
+	 <!-- 상품 상세페이지 구매후기 리스트 조회 + 페이징 -->
+	 <select id="getRivewsByProIdMap" parameterType="map" resultType="Review">
+	 	SELECT
+	         REVIEW_ID                  as id,
+	         REVIEW_COMMENT         	as "comment",
+	         REVIEW_CREATEDATE      	as createDate,
+	         REVIEW_RATES           	as rates,
+	         PRODUCT_ID               	as "product.id",
+	         CUSTOMER_ID            	as "customer.id",
+	         CUSTOMER_NICKNAME   		as "customer.nickname",
+	         REVIEW_DELETED         	as deleted,
+	         PRODUCT_NAME            	as "product.name"
+      	FROM( 
+	  		SELECT 
+				 row_number() over(ORDER BY PR.REVIEW_CREATEDATE DESC) rn,
+		         PR.REVIEW_ID         ,
+		         PR.REVIEW_COMMENT      ,
+		         PR.REVIEW_CREATEDATE   ,
+		         PR.REVIEW_RATES         ,
+		         PR.PRODUCT_ID         ,
+		         PR.CUSTOMER_ID         ,
+		         C.CUSTOMER_NICKNAME,
+		         PR.REVIEW_DELETED      ,
+		         P.PRODUCT_NAME         
+      		FROM
+         		PRODUCT_REVIEW PR, PRODUCTS P, CUSTOMERS C
+      		WHERE
+         		PR.PRODUCT_ID = P.PRODUCT_ID
+      		AND
+         		PR.CUSTOMER_ID = C.CUSTOMER_ID
+      		AND
+         		PR.REVIEW_DELETED = 'N'
+      		AND   
+         		P.PRODUCT_ID = #{productId}
+      		)
+		WHERE rn >= #{criteria.beginIndex} and rn &lt;= #{criteria.endIndex}
+	 </select>
+	 
+	 <!-- 상품 상세페이지 구매후기 리스트 페이징 -->
+	 <select id="getTotalRowsByProIdMap" parameterType="map" resultType="int">
+		 SELECT 
+	          count(*)
+	      FROM
+	         PRODUCT_REVIEW PR, PRODUCTS P, CUSTOMERS C
+	      WHERE
+	         PR.PRODUCT_ID = P.PRODUCT_ID
+	      AND
+	         PR.CUSTOMER_ID = C.CUSTOMER_ID
+	      AND
+	         P.PRODUCT_ID = #{productId}
+	 </select>
+	 
+</mapper>

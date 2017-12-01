@@ -1,0 +1,613 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.analysis.mappers.AnalysisChartMapper">
+
+	<!-- PROFIT 구하는 쿼리문 -->
+	<select id="getChartData" parameterType="hashmap" resultType="Analysis">
+		with tmp
+		as (
+			select 
+				to_char(to_date(#{endDate}, 'YYYY-MM-DD') - (level - 1), 'YYYY-MM-DD') AS DD
+			from dual
+			connect by level &lt;= #{dayGap}
+		)
+		select
+			 B.DD "day",
+			 NVL(A.profit, 0) profit
+		from (
+		select
+			TO_CHAR(O.ORDER_DATE, 'YYYY-MM-DD') AS "date", sum(P.profit) as profit
+		from
+		(select
+			OD.ORDER_ID,
+			I.ITEM_ID,
+			I.ITEM_OPTION,
+			((I.ITEM_SALE_PRICE - I.ITEM_ORIGINAL_PRICE) * OD.ORDER_QUANTITY) AS PROFIT
+		from
+			PRODUCTS P, ITEMS I, ORDER_DETAILS OD
+		where
+			P.PRODUCT_ID = I.PRODUCT_ID
+		and
+			P.COMPANY_ID = #{companyId}
+		and
+			I.ITEM_ID = OD.ITEM_ID
+		<if test="keyword != ''">
+			<choose>
+				<when test="opt == 'productName'">
+					and P.PRODUCT_NAME LIKE '%' || #{keyword} || '%'
+				</when>
+			</choose>
+		</if>
+			)P, ORDERS O
+		where
+			O.ORDER_ID = P.ORDER_ID
+		group by to_char(O.ORDER_DATE, 'YYYY-MM-DD')
+		) A, TMP B
+		where
+			A."date"(+) = B.dd
+		order by B.DD
+	</select>
+	
+	<select id="getCategoryData" parameterType="hashmap" resultType="Analysis">
+		SELECT
+			A.SMALL_CATEGORY_NAME 	as category,
+			NVL(B.PROFIT, 0) 		as profit
+		FROM
+		
+			(SELECT
+				SC.SMALL_CATEGORY_NAME,
+				SC.SMALL_CATEGORY_ID
+			FROM
+				SMALL_CATEGORIES SC, MIDDLE_CATEGORIES MC, BIG_CATEGORIES BC
+			WHERE
+				SC.MIDDLE_CATEGORY_ID = MC.MIDDLE_CATEGORY_ID
+			AND
+				MC.BIG_CATEGORY_ID = BC.BIG_CATEGORY_ID
+			AND 
+				BC.BIG_CATEGORY_ID IN (100, 200, 300))A,
+
+			(SELECT
+				SC.SMALL_CATEGORY_NAME,
+				SUM(I.PROFIT) AS PROFIT
+			FROM
+				(SELECT
+				I.ITEM_ID,
+				I.PRODUCT_ID,
+				((I.ITEM_SALE_PRICE - I.ITEM_ORIGINAL_PRICE) * OD.ORDER_QUANTITY) AS PROFIT,
+				OD.ORDER_ID
+				FROM
+				   ITEMS I, ORDER_DETAILS OD
+				WHERE 
+				   I.ITEM_ID = OD.ITEM_ID) I, ORDERS O, PRODUCTS P, SMALL_CATEGORIES SC
+			WHERE
+				   I.ORDER_ID = O.ORDER_ID
+			AND
+				   P.PRODUCT_ID = I.PRODUCT_ID
+			AND
+				P.SMALL_CATEGORY_ID = SC.SMALL_CATEGORY_ID
+			AND
+				   P.COMPANY_ID = #{companyId}
+			<if test="keyword != ''">
+				<choose>
+					<when test="opt == 'productName'">
+						and P.PRODUCT_NAME LIKE '%' || #{keyword} || '%'
+					</when>
+				</choose>
+			</if>
+			AND
+					O.ORDER_DATE >= #{beginday}
+			AND
+					O.ORDER_DATE &lt;= to_date(#{endday}, 'yyyy-mm-dd') +1
+			GROUP BY 
+					SC.SMALL_CATEGORY_NAME)B
+
+		WHERE A.SMALL_CATEGORY_NAME = B.SMALL_CATEGORY_NAME(+)
+		ORDER BY A.SMALL_CATEGORY_NAME
+	</select>
+	
+	<select id="getMonthChart" parameterType="hashmap" resultType="Analysis">
+		with tmp
+			as (
+			SELECT to_char(TO_DATE(#{endDate}||'-01'),'yyyy-mm') || lpad(LEVEL, 3, '-0')   AS DD
+			FROM DUAL 
+			CONNECT BY LEVEL &lt;= to_char(LAST_day(TO_DATE(#{endDate}||'-01')),'dd')
+			)
+			SELECT
+			    B.DD "day",
+			    NVL(A.profit, 0) PROFIT
+			FROM (
+			SELECT
+			   TO_CHAR(O.ORDER_DATE, 'YYYY-MM-DD') AS "date"
+			   , sum(P.profit)      AS PROFIT
+			FROM
+			(SELECT
+			   OD.ORDER_ID,
+			   I.ITEM_ID,
+			   I.ITEM_OPTION,
+			   ((I.ITEM_SALE_PRICE - I.ITEM_ORIGINAL_PRICE) * OD.ORDER_QUANTITY) AS PROFIT
+			from
+			   PRODUCTS P, ITEMS I, ORDER_DETAILS OD
+			WHERE
+			   P.PRODUCT_ID = I.PRODUCT_ID
+			AND
+			   P.COMPANY_ID = #{companyId}
+			AND
+			   I.ITEM_ID = OD.ITEM_ID
+			<if test="keyword != ''">
+				<choose>
+					<when test="opt == 'productName'">
+						and P.PRODUCT_NAME LIKE '%' || #{keyword} || '%'
+					</when>
+				</choose>
+			</if>   
+			   )P, ORDERS O
+			WHERE
+			   O.ORDER_ID = P.ORDER_ID
+			GROUP BY TO_CHAR(O.ORDER_DATE, 'YYYY-MM-DD')
+			) A, TMP B
+			WHERE
+			   A."date"(+) = B.dd
+			ORDER BY B.DD
+	</select>
+	
+	<select id="getMonthCategoryData" parameterType="hashmap" resultType="Analysis">
+		SELECT
+			A.SMALL_CATEGORY_NAME 	as category,
+			NVL(B.PROFIT, 0) 		as profit
+		FROM
+		
+			(SELECT
+				SC.SMALL_CATEGORY_NAME,
+				SC.SMALL_CATEGORY_ID
+			FROM
+				SMALL_CATEGORIES SC, MIDDLE_CATEGORIES MC, BIG_CATEGORIES BC
+			WHERE
+				SC.MIDDLE_CATEGORY_ID = MC.MIDDLE_CATEGORY_ID
+			AND
+				MC.BIG_CATEGORY_ID = BC.BIG_CATEGORY_ID
+			AND 
+				BC.BIG_CATEGORY_ID IN (100, 200, 300))A,
+
+			(SELECT
+				SC.SMALL_CATEGORY_NAME,
+				SUM(I.PROFIT) AS PROFIT
+			FROM
+				(SELECT
+				I.ITEM_ID,
+				I.PRODUCT_ID,
+				((I.ITEM_SALE_PRICE - I.ITEM_ORIGINAL_PRICE) * OD.ORDER_QUANTITY) AS PROFIT,
+				OD.ORDER_ID
+				FROM
+				   ITEMS I, ORDER_DETAILS OD
+				WHERE 
+				   I.ITEM_ID = OD.ITEM_ID) I, ORDERS O, PRODUCTS P, SMALL_CATEGORIES SC
+			WHERE
+				   I.ORDER_ID = O.ORDER_ID
+			AND
+				   P.PRODUCT_ID = I.PRODUCT_ID
+			AND
+				P.SMALL_CATEGORY_ID = SC.SMALL_CATEGORY_ID
+			AND
+				   P.COMPANY_ID = #{companyId}
+			<if test="keyword != ''">
+				<choose>
+					<when test="opt == 'productName'">
+						and P.PRODUCT_NAME LIKE '%' || #{keyword} || '%'
+					</when>
+				</choose>
+			</if>
+			AND
+					O.ORDER_DATE >= to_char(TO_DATE(#{endday}||'-01'),'yyyy-mm-dd')
+			AND
+					O.ORDER_DATE &lt;= to_char(LAST_day(TO_DATE(#{endday}||'-01')) +1, 'yyyy-MM-dd')
+			GROUP BY 
+					SC.SMALL_CATEGORY_NAME)B
+
+		WHERE A.SMALL_CATEGORY_NAME = B.SMALL_CATEGORY_NAME(+)
+		ORDER BY A.SMALL_CATEGORY_NAME
+	</select>
+	
+	<!-- 수량 구하는 쿼리문 -->
+	<select id="getSalesChartData" parameterType="hashmap" resultType="Analysis">
+		with tmp
+		as (
+			select 
+				to_char(to_date(#{endDate}, 'YYYY-MM-DD') - (level - 1), 'YYYY-MM-DD') AS DD
+			from dual
+			connect by level &lt;= #{dayGap}
+		)
+		select
+			 B.DD "day",
+			 NVL(A.QUANTITY, 0) QUANTITY
+		from (
+		select
+			TO_CHAR(O.ORDER_DATE, 'YYYY-MM-DD') AS "date", sum(P.QUANTITY) as QUANTITY
+		from
+		(select
+			OD.ORDER_ID,
+			I.ITEM_ID,
+			I.ITEM_OPTION,
+			I.SALED_QUANTITY AS QUANTITY
+		from
+			PRODUCTS P, ITEMS I, ORDER_DETAILS OD
+		where
+			P.PRODUCT_ID = I.PRODUCT_ID
+		and
+			P.COMPANY_ID = #{companyId}
+		and
+			I.ITEM_ID = OD.ITEM_ID
+		<if test="keyword != ''">
+			<choose>
+				<when test="opt == 'productName'">
+					and P.PRODUCT_NAME LIKE '%' || #{keyword} || '%'
+				</when>
+			</choose>
+		</if>	
+			)P, ORDERS O
+		where
+			O.ORDER_ID = P.ORDER_ID
+		group by to_char(O.ORDER_DATE, 'YYYY-MM-DD')
+		) A, TMP B
+		where
+			A."date"(+) = B.dd
+		order by B.DD
+	</select>
+	
+	<select id="getSalesCategoryData" parameterType="hashmap" resultType="Analysis">
+		SELECT
+			A.SMALL_CATEGORY_NAME 	as category,
+			NVL(B.QUANTITY, 0) 		as QUANTITY
+		FROM
+		
+			(SELECT
+				SC.SMALL_CATEGORY_NAME,
+				SC.SMALL_CATEGORY_ID
+			FROM
+				SMALL_CATEGORIES SC, MIDDLE_CATEGORIES MC, BIG_CATEGORIES BC
+			WHERE
+				SC.MIDDLE_CATEGORY_ID = MC.MIDDLE_CATEGORY_ID
+			AND
+				MC.BIG_CATEGORY_ID = BC.BIG_CATEGORY_ID
+			AND 
+				BC.BIG_CATEGORY_ID IN (100, 200, 300))A,
+
+			(SELECT
+				SC.SMALL_CATEGORY_NAME,
+				SUM(I.QUANTITY) AS QUANTITY
+			FROM
+				(SELECT
+				I.ITEM_ID,
+				I.PRODUCT_ID,
+				I.SALED_QUANTITY AS QUANTITY,
+				OD.ORDER_ID
+				FROM
+				   ITEMS I, ORDER_DETAILS OD
+				WHERE 
+				   I.ITEM_ID = OD.ITEM_ID) I, ORDERS O, PRODUCTS P, SMALL_CATEGORIES SC
+			WHERE
+				   I.ORDER_ID = O.ORDER_ID
+			AND
+				   P.PRODUCT_ID = I.PRODUCT_ID
+			AND
+				P.SMALL_CATEGORY_ID = SC.SMALL_CATEGORY_ID
+			AND
+				   P.COMPANY_ID = #{companyId}
+			<if test="keyword != ''">
+				<choose>
+					<when test="opt == 'productName'">
+						and P.PRODUCT_NAME LIKE '%' || #{keyword} || '%'
+					</when>
+				</choose>
+			</if>
+			AND
+					O.ORDER_DATE >= #{beginday}
+			AND
+					O.ORDER_DATE &lt;=  to_date(#{endday}, 'yyyy-mm-dd') +1
+			GROUP BY 
+					SC.SMALL_CATEGORY_NAME)B
+
+		WHERE A.SMALL_CATEGORY_NAME = B.SMALL_CATEGORY_NAME(+)
+		ORDER BY A.SMALL_CATEGORY_NAME
+	</select>
+	
+	<select id="getMonthSalesChart" parameterType="hashmap" resultType="Analysis">
+		with tmp
+			as (
+			SELECT to_char(TO_DATE(#{endDate}||'-01'),'yyyy-mm') || lpad(LEVEL, 3, '-0')   AS DD
+			FROM DUAL 
+			CONNECT BY LEVEL &lt;= to_char(LAST_day(TO_DATE(#{endDate}||'-01')),'dd')
+			)
+			SELECT
+			    B.DD "day",
+			    NVL(A.QUANTITY, 0) QUANTITY
+			FROM (
+			SELECT
+			   TO_CHAR(O.ORDER_DATE, 'YYYY-MM-DD') AS "date"
+			   , sum(P.QUANTITY)      AS QUANTITY
+			FROM
+			(SELECT
+			   OD.ORDER_ID,
+			   I.ITEM_ID,
+			   I.ITEM_OPTION,
+			   I.SALED_QUANTITY AS QUANTITY
+			from
+			   PRODUCTS P, ITEMS I, ORDER_DETAILS OD
+			WHERE
+			   P.PRODUCT_ID = I.PRODUCT_ID
+			AND
+			   P.COMPANY_ID = #{companyId}
+			AND
+			   I.ITEM_ID = OD.ITEM_ID
+			<if test="keyword != ''">
+				<choose>
+					<when test="opt == 'productName'">
+						and P.PRODUCT_NAME LIKE '%' || #{keyword} || '%'
+					</when>
+				</choose>
+			</if>   
+			   )P, ORDERS O
+			WHERE
+			   O.ORDER_ID = P.ORDER_ID
+			GROUP BY TO_CHAR(O.ORDER_DATE, 'YYYY-MM-DD')
+			) A, TMP B
+			WHERE
+			   A."date"(+) = B.dd
+			ORDER BY B.DD
+	</select>
+	
+	<select id="getMonthSalesCategoryData" parameterType="hashmap" resultType="Analysis">
+		SELECT
+			A.SMALL_CATEGORY_NAME 	as category,
+			NVL(B.QUANTITY, 0) QUANTITY
+		FROM
+		
+			(SELECT
+				SC.SMALL_CATEGORY_NAME,
+				SC.SMALL_CATEGORY_ID
+			FROM
+				SMALL_CATEGORIES SC, MIDDLE_CATEGORIES MC, BIG_CATEGORIES BC
+			WHERE
+				SC.MIDDLE_CATEGORY_ID = MC.MIDDLE_CATEGORY_ID
+			AND
+				MC.BIG_CATEGORY_ID = BC.BIG_CATEGORY_ID
+			AND 
+				BC.BIG_CATEGORY_ID IN (100, 200, 300))A,
+
+			(SELECT
+				SC.SMALL_CATEGORY_NAME,
+				SUM(I.QUANTITY) AS QUANTITY
+				
+			FROM
+				(SELECT
+				I.ITEM_ID,
+				I.PRODUCT_ID,
+				I.SALED_QUANTITY AS QUANTITY,
+				OD.ORDER_ID
+				FROM
+				   ITEMS I, ORDER_DETAILS OD
+				WHERE 
+				   I.ITEM_ID = OD.ITEM_ID) I, ORDERS O, PRODUCTS P, SMALL_CATEGORIES SC
+			WHERE
+				   I.ORDER_ID = O.ORDER_ID
+			AND
+				   P.PRODUCT_ID = I.PRODUCT_ID
+			AND
+				P.SMALL_CATEGORY_ID = SC.SMALL_CATEGORY_ID
+			<if test="keyword != ''">
+				<choose>
+					<when test="opt == 'productName'">
+						and P.PRODUCT_NAME LIKE '%' || #{keyword} || '%'
+					</when>
+				</choose>
+			</if>
+			AND
+				   P.COMPANY_ID = #{companyId}
+			AND
+					O.ORDER_DATE >= to_char(TO_DATE(#{endday}||'-01'),'yyyy-mm-dd')
+			AND
+					O.ORDER_DATE &lt;= to_char(LAST_day(TO_DATE(#{endday}||'-01')) +1, 'yyyy-MM-dd')
+			GROUP BY 
+					SC.SMALL_CATEGORY_NAME)B
+
+		WHERE A.SMALL_CATEGORY_NAME = B.SMALL_CATEGORY_NAME(+)
+		ORDER BY A.SMALL_CATEGORY_NAME
+	</select>
+	
+	<select id="getDaysOrderDetailInfos" parameterType="hashmap" resultType="OrderDetail">
+		SELECT
+	         ORDER_ID            as "order.id",
+	         ITEM_ID             as "item.id",
+	         ORDER_QUANTITY      as orderQuantity,
+	         
+	         ITEM_SALE_PRICE     as "item.salePrice",
+	         ITEM_ORIGINAL_PRICE as "item.originalPrice",
+	         INITIAL_QUANTITY    as "item.initialQuantity",
+	         SALED_QUANTITY      as "item.saledQuantity",
+	         ITEM_OPTION         as "item.options",
+	         
+	         ORDER_DATE          as "order.orderDate",
+	         CUSTOMER_ID         as "order.customer.id",
+	         CUSTOMER_USERNAME   as "order.customer.username",
+	         
+	         COMPANY_ID          as "item.product.company.id",
+	         PRODUCT_ID          as "item.product.id",
+	         PRODUCT_SHOW      	 as "item.product.show",
+	         SMALL_CATEGORY_ID   as "item.product.smallCategory.id",
+	         PRODUCT_NAME        as "item.product.name"
+		FROM
+	         (SELECT
+	               ROW_NUMBER( ) over(order by OD.ORDER_ID ASC) RN,
+	               OD.ORDER_ID              ,
+	               OD.ORDER_QUANTITY      	,
+	               I.ITEM_SALE_PRICE        ,
+	               I.ITEM_ID                ,
+	               I.ITEM_ORIGINAL_PRICE    ,
+	               I.INITIAL_QUANTITY       ,
+	               I.SALED_QUANTITY         ,
+	               I.ITEM_OPTION            ,
+	               
+	               O.ORDER_DATE             ,
+	               O.CUSTOMER_ID            ,
+	               C.CUSTOMER_USERNAME		,
+	               
+	               P.COMPANY_ID             ,
+	               P.PRODUCT_ID             ,
+	               P.PRODUCT_SHOW           ,
+	               P.SMALL_CATEGORY_ID      ,
+	               P.PRODUCT_NAME      
+	         FROM
+	               ORDER_DETAILS OD, ITEMS I, ORDERS O, PRODUCTS P, CUSTOMERS C
+	         WHERE
+	               OD.ORDER_ID = O.ORDER_ID
+	         AND
+	               I.ITEM_ID = OD.ITEM_ID
+	         AND
+	               P.PRODUCT_ID = I.PRODUCT_ID
+	         AND
+	         		C.CUSTOMER_ID = O.CUSTOMER_ID
+	         AND
+	               P.COMPANY_ID = #{companyId}
+	         <if test="criteria.keyword != null">
+				<choose>
+					<when test="criteria.opt == 'productName'">
+						and P.PRODUCT_NAME LIKE '%' || #{criteria.keyword} || '%'
+					</when>
+				</choose>
+			</if>
+	         AND
+	               O.ORDER_DATE >= #{criteria.beginday}
+			 AND
+					O.ORDER_DATE &lt;= #{criteria.endday} +1
+	         )
+		WHERE RN >= #{criteria.beginIndex} and RN &lt;= #{criteria.endIndex}
+	</select>
+	
+	<select id="getTotalRowsForDaysOrder" parameterType="hashmap" resultType="int">
+			SELECT
+				COUNT (*)
+			FROM
+	               ORDER_DETAILS OD, ITEMS I, ORDERS O, PRODUCTS P, CUSTOMERS C
+	        WHERE
+	               OD.ORDER_ID = O.ORDER_ID
+	        AND
+	               I.ITEM_ID = OD.ITEM_ID
+	        AND
+	               P.PRODUCT_ID = I.PRODUCT_ID
+	        AND
+	         		C.CUSTOMER_ID = O.CUSTOMER_ID
+	        AND
+	               P.COMPANY_ID = #{companyId}
+	        <if test="criteria.keyword != null">
+				<choose>
+					<when test="criteria.opt == 'productName'">
+						and P.PRODUCT_NAME LIKE '%' || #{criteria.keyword} || '%'
+					</when>
+				</choose>
+			</if>
+	        AND
+	            O.ORDER_DATE >= #{criteria.beginday}
+			AND
+				O.ORDER_DATE &lt;= #{criteria.endday} + 1
+	</select>
+	
+	
+	<select id="getMonthOrderDetailInfos" parameterType="hashmap" resultType="OrderDetail">
+		SELECT
+	         ORDER_ID            as "order.id",
+	         ITEM_ID             as "item.id",
+	         ORDER_QUANTITY      as orderQuantity,
+	         
+	         ITEM_SALE_PRICE     as "item.salePrice",
+	         ITEM_ORIGINAL_PRICE as "item.originalPrice",
+	         INITIAL_QUANTITY    as "item.initialQuantity",
+	         SALED_QUANTITY      as "item.saledQuantity",
+	         ITEM_OPTION         as "item.options",
+	         
+	         ORDER_DATE          as "order.orderDate",
+	         CUSTOMER_ID         as "order.customer.id",
+	         CUSTOMER_USERNAME   as "order.customer.username",
+	         
+	         COMPANY_ID          as "item.product.company.id",
+	         PRODUCT_ID          as "item.product.id",
+	         PRODUCT_SHOW      	 as "item.product.show",
+	         SMALL_CATEGORY_ID   as "item.product.smallCategory.id",
+	         PRODUCT_NAME        as "item.product.name"
+		FROM
+	         (SELECT
+	               ROW_NUMBER( ) over(order by OD.ORDER_ID ASC) RN,
+	               OD.ORDER_ID              ,
+	               OD.ORDER_QUANTITY      	,
+	               I.ITEM_SALE_PRICE        ,
+	               I.ITEM_ID                ,
+	               I.ITEM_ORIGINAL_PRICE    ,
+	               I.INITIAL_QUANTITY       ,
+	               I.SALED_QUANTITY         ,
+	               I.ITEM_OPTION            ,
+	               
+	               O.ORDER_DATE             ,
+	               O.CUSTOMER_ID            ,
+	               C.CUSTOMER_USERNAME		,
+	               
+	               P.COMPANY_ID             ,
+	               P.PRODUCT_ID             ,
+	               P.PRODUCT_SHOW           ,
+	               P.SMALL_CATEGORY_ID      ,
+	               P.PRODUCT_NAME      
+	         FROM
+	               ORDER_DETAILS OD, ITEMS I, ORDERS O, PRODUCTS P, CUSTOMERS C
+	         WHERE
+	               OD.ORDER_ID = O.ORDER_ID
+	         AND
+	               I.ITEM_ID = OD.ITEM_ID
+	         AND
+	               P.PRODUCT_ID = I.PRODUCT_ID
+	         AND
+	         		C.CUSTOMER_ID = O.CUSTOMER_ID
+	         AND
+	               P.COMPANY_ID = #{companyId}
+	         <if test="criteria.keyword != null">
+				<choose>
+					<when test="criteria.opt == 'productName'">
+						and P.PRODUCT_NAME LIKE '%' || #{criteria.keyword} || '%'
+					</when>
+				</choose>
+			</if>
+	         AND
+					O.ORDER_DATE >= to_char(TO_DATE(#{endday}||'-01'),'yyyy-mm-dd')
+			 AND
+					O.ORDER_DATE &lt;= to_char(LAST_day(TO_DATE(#{endday}||'-01')) +1, 'yyyy-MM-dd')
+	         )
+		WHERE RN >= #{criteria.beginIndex} and RN &lt;= #{criteria.endIndex}
+	</select>
+	
+	<select id="getTotalRowsForMonthOrder" parameterType="hashmap" resultType="int">
+		SELECT
+				COUNT (*)
+			FROM
+	               ORDER_DETAILS OD, ITEMS I, ORDERS O, PRODUCTS P, CUSTOMERS C
+	        WHERE
+	               OD.ORDER_ID = O.ORDER_ID
+	        AND
+	               I.ITEM_ID = OD.ITEM_ID
+	        AND
+	               P.PRODUCT_ID = I.PRODUCT_ID
+	        AND
+	         		C.CUSTOMER_ID = O.CUSTOMER_ID
+	        AND
+	               P.COMPANY_ID = #{companyId}
+	        <if test="criteria.keyword != null">
+				<choose>
+					<when test="criteria.opt == 'productName'">
+						and P.PRODUCT_NAME LIKE '%' || #{criteria.keyword} || '%'
+					</when>
+				</choose>
+			</if>
+	        AND
+				O.ORDER_DATE >= to_char(TO_DATE(#{endday}||'-01'),'yyyy-mm-dd')
+			AND
+				O.ORDER_DATE &lt;= to_char(LAST_day(TO_DATE(#{endday}||'-01')) +1, 'yyyy-MM-dd')
+	</select>
+</mapper>

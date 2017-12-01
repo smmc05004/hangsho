@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.categories.mappers.CategoryMapper">
+
+	<select id="getCategory" parameterType="int" resultType="SmallCategory">
+		select 
+			S.small_category_id 			as id,
+			S.small_category_name			as name,
+			M.middle_category_id			as "midcategory.id",
+			M.middle_category_name			as "midcategory.name",
+			B.big_category_id				as "midcategory.bigcategory.id",
+			B.big_category_name				as "midcategory.bigcategory.name"
+		from 
+			small_categories S, middle_categories M, big_categories B
+		where
+			S.middle_category_id = M.middle_category_id
+			and M.big_category_id = B.big_category_id
+			and S.small_category_id = ${value}
+	</select>
+	<select id="getCategoryListByMiddle" parameterType="int" resultType="SmallCategory">
+		select 
+			S.small_category_id 			as id,
+			S.small_category_name			as name,
+			M.middle_category_id			as "midcategory.id",
+			M.middle_category_name			as "midcategory.name"
+		from 
+			small_categories S, middle_categories M
+		where
+			S.middle_category_id = M.middle_category_id
+			and M.middle_category_id = ${value}
+	</select>
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.charts.mappers.ChartMapper">
+
+<!-- 상품별 차트 -->
+<select id="getDailyChart" parameterType="CriteriaForChart" resultType="ProfitChart">
+	select 
+		B.tm											as tm,
+		nvl(sum(A.profit), 0)					as profit,
+		nvl(sum(order_quantity), 0)		as qty
+		from (
+				select
+				to_char(order_date, 'hh24') hours, order_quantity,
+				(B.order_quantity * C.item_sale_price) - (B.order_quantity * C.item_original_price) as profit
+				from orders A, order_details B, items C
+				where A.order_id = B.order_id
+				and B.item_id = C.item_id
+				and to_char(A.order_date, 'yyyy-MM-dd') = #{selectDate}
+				and B.item_id = #{itemId}
+				) A ,
+				(
+					select lpad(level-1 , 2, '0') tm
+				    from dual connect by level &lt;= 24
+				) B
+		where A.hours(+) = B.tm 
+		group by B.tm
+		order by B.tm
+</select>
+
+<select id="getMonthChart" parameterType="CriteriaForChart" resultType="ProfitChart">
+	select 
+		B.dd											as tm,
+		nvl(sum(A.profit), 0)					as profit,
+		nvl(sum(order_quantity), 0)		as qty
+		from (
+				select
+					to_char(order_date, 'dd') days, order_quantity,
+					(B.order_quantity * C.item_sale_price) - (B.order_quantity * C.item_original_price) as profit
+				from
+					orders A, order_details B, items C
+				where 
+					A.order_id = B.order_id
+					and B.item_id = C.item_id
+					and to_char(A.order_date, 'yyyy-MM') = #{selectDate}
+					and B.item_id = #{itemId}
+					) A ,
+				(
+					select lpad(level , 2, '0') dd
+				    from dual connect by level &lt;= 31
+				) B
+		where A.days(+) = B.dd 
+		group by B.dd
+		order by B.dd
+</select>
+
+<select id="getYearChart" parameterType="CriteriaForChart" resultType="ProfitChart">
+	select B.mm				as tm,
+		nvl(sum(A.profit), 0)		as profit,
+		nvl(sum(order_quantity), 0) as qty
+	from ( 
+				select
+					to_char(order_date, 'mm') months, order_quantity,
+					(B.order_quantity * C.item_sale_price) - (B.order_quantity * C.item_original_price) as profit
+				from 
+					orders A, order_details B, items C
+				where
+					A.order_id = B.order_id
+					and B.item_id = C.item_id
+					and to_char(A.order_date, 'yyyy') = #{selectDate}
+					and B.item_id = #{itemId}
+					) A,
+				(
+					select lpad(level , 2, '0') mm
+					from dual connect by level &lt;= 12
+				) B
+	where A.months(+) = B.mm
+	group by B.mm
+	order by B.mm
+</select>
+
+<!-- 기업별 차트 -->
+<select id="getDailyChartByCompany" parameterType="CriteriaForChart" resultType="ProfitChart">
+	select 
+		B.tm											as tm,
+		nvl(sum(A.profit), 0)					as profit,
+		nvl(sum(order_quantity), 0)		as qty
+		from (
+				select
+				to_char(order_date, 'hh24') hours, order_quantity,
+				(B.order_quantity * C.item_sale_price) - (B.order_quantity * C.item_original_price) as profit
+				from orders A, order_details B, items C, products P
+				where A.order_id = B.order_id
+				and B.item_id = C.item_id
+				and C.product_id = P.product_id
+				and to_char(A.order_date, 'yyyy-MM-dd') = #{selectDate}
+				and P.company_id = #{companyId}
+				) A ,
+				(
+					select lpad(level-1 , 2, '0') tm
+				    from dual connect by level &lt;= 24
+				) B
+		where A.hours(+) = B.tm 
+		group by B.tm
+		order by B.tm
+</select>
+
+<select id="getMothChartByCompany" parameterType="CriteriaForChart" resultType="ProfitChart">
+
+with tmp
+			as (
+			SELECT to_char(TO_DATE(#{selectDate}||'-01'),'yyyy-mm') || lpad(LEVEL, 3, '-0')   AS DD
+			FROM DUAL 
+			CONNECT BY LEVEL &lt;= to_char(LAST_day(TO_DATE(#{selectDate}||'-01')),'dd')
+			)
+			SELECT
+			    B.DD "day",
+			    NVL(A.profit, 0) PROFIT,
+			    nvl(A.qty, 0) qty
+			FROM (
+				SELECT
+			   TO_CHAR(O.ORDER_DATE, 'YYYY-MM-DD') AS "date",
+			   sum(P.profit)      AS PROFIT,
+			   sum(P.order_quantity) as qty
+			FROM
+			(SELECT
+			   OD.ORDER_ID,
+			   I.ITEM_ID,
+			   I.ITEM_OPTION,
+			   ((I.ITEM_SALE_PRICE - I.ITEM_ORIGINAL_PRICE) * OD.ORDER_QUANTITY) AS PROFIT,
+			   OD.order_quantity
+			from
+				   PRODUCTS P, ITEMS I, ORDER_DETAILS OD
+			WHERE
+				   P.PRODUCT_ID = I.PRODUCT_ID
+				AND
+				   P.COMPANY_ID = #{companyId}
+				AND
+				   I.ITEM_ID = OD.ITEM_ID)P, ORDERS O
+				WHERE
+				   O.ORDER_ID = P.ORDER_ID
+				GROUP BY TO_CHAR(O.ORDER_DATE, 'YYYY-MM-DD')
+				) A, TMP B
+			WHERE
+			   A."date"(+) = B.dd
+			ORDER BY B.DD
+
+</select>
+
+<!-- 전체 수입 -->
+<select id="getAllDailyChart" parameterType="CriteriaForChart" resultType="ProfitChart">
+	select 
+		B.tm											as tm,
+		nvl(sum(A.profit), 0)					as profit,
+		nvl(sum(order_quantity), 0)		as qty
+		from (
+				select
+				to_char(order_date, 'hh24') hours, order_quantity,
+				(B.order_quantity * C.item_sale_price) - (B.order_quantity * C.item_original_price) as profit
+				from orders A, order_details B, items C
+				where A.order_id = B.order_id
+				and B.item_id = C.item_id
+				and to_char(A.order_date, 'yyyy-MM-dd') = #{selectDate}
+				) A ,
+				(
+					select lpad(level-1 , 2, '0') tm
+				    from dual connect by level &lt;= 24
+				) B
+		where A.hours(+) = B.tm 
+		group by B.tm
+		order by B.tm
+</select>
+
+<select id="getAllDailyCategoryChart" parameterType="CriteriaForChart" resultType="ProfitChart">
+SELECT
+			A.middle_CATEGORY_NAME	as name,
+			NVL(B.PROFIT, 0) 		as profit,
+			nvl(B.qty, 0)			as qty
+		FROM
+		
+			(SELECT
+				DISTINCT(MC.middle_CATEGORY_NAME) as middle_CATEGORY_NAME,
+				MC.middle_CATEGORY_ID
+			FROM
+				SMALL_CATEGORIES SC, MIDDLE_CATEGORIES MC, BIG_CATEGORIES BC
+			WHERE
+				SC.MIDDLE_CATEGORY_ID = MC.MIDDLE_CATEGORY_ID
+			AND
+				MC.BIG_CATEGORY_ID = BC.BIG_CATEGORY_ID
+			AND 
+				BC.BIG_CATEGORY_ID IN (100, 200, 300)) A,
+
+			(SELECT
+				M.middle_CATEGORY_NAME,
+				SUM(I.PROFIT) AS PROFIT,
+				sum(I.order_quantity)	as qty
+			FROM
+				(SELECT
+				I.ITEM_ID,
+				I.PRODUCT_ID,
+				((I.ITEM_SALE_PRICE - I.ITEM_ORIGINAL_PRICE) * OD.ORDER_QUANTITY) AS PROFIT,
+				OD.ORDER_ID,
+				OD.order_quantity
+				FROM
+				   ITEMS I, ORDER_DETAILS OD
+				WHERE 
+				   I.ITEM_ID = OD.ITEM_ID) I, ORDERS O, PRODUCTS P, SMALL_CATEGORIES SC, middle_CATEGORIES M
+			WHERE
+				   I.ORDER_ID = O.ORDER_ID
+			AND
+				   P.PRODUCT_ID = I.PRODUCT_ID
+			AND
+				P.SMALL_CATEGORY_ID = SC.SMALL_CATEGORY_ID
+			and 
+				SC.MIDDLE_CATEGORY_ID = M.MIDDLE_CATEGORY_ID
+			and to_char(ORDER_DATE, 'yyyy-mm-dd') = #{selectDate}
+			GROUP BY 
+					M.middle_CATEGORY_NAME)B
+
+		WHERE A.middle_category_name = B.middle_CATEGORY_NAME(+)
+</select>
+
+<select id="getAllMonthChart" parameterType="CriteriaForChart" resultType="ProfitChart">
+	with tmp
+			as (
+			SELECT to_char(TO_DATE(#{selectDate}||'-01'),'yyyy-mm') || lpad(LEVEL, 3, '-0')   AS DD
+			FROM DUAL 
+			CONNECT BY LEVEL &lt;= to_char(LAST_day(TO_DATE(#{selectDate}||'-01')),'dd')
+			)
+			SELECT
+			    B.DD "day",
+			    NVL(A.profit, 0) PROFIT,
+			    nvl(A.qty, 0) qty
+			FROM (
+				SELECT
+			   TO_CHAR(O.ORDER_DATE, 'YYYY-MM-DD') AS "date",
+			   sum(P.profit)      AS PROFIT,
+			   sum(P.order_quantity) as qty
+			FROM
+			(SELECT
+			   OD.ORDER_ID,
+			   I.ITEM_ID,
+			   I.ITEM_OPTION,
+			   ((I.ITEM_SALE_PRICE - I.ITEM_ORIGINAL_PRICE) * OD.ORDER_QUANTITY) AS PROFIT,
+			   OD.order_quantity
+			from
+				   PRODUCTS P, ITEMS I, ORDER_DETAILS OD
+			WHERE
+				   P.PRODUCT_ID = I.PRODUCT_ID
+				AND
+				   I.ITEM_ID = OD.ITEM_ID)P, ORDERS O
+				WHERE
+				   O.ORDER_ID = P.ORDER_ID
+				GROUP BY TO_CHAR(O.ORDER_DATE, 'YYYY-MM-DD')
+				) A, TMP B
+			WHERE
+			   A."date"(+) = B.dd
+			ORDER BY B.DD
+</select>
+
+<select id="getAllMonthCategoryChart" parameterType="CriteriaForChart" resultType="ProfitChart">
+SELECT
+			A.middle_CATEGORY_NAME	as name,
+			NVL(B.PROFIT, 0) 		as profit,
+			nvl(B.qty, 0)			as qty
+		FROM
+		
+			(SELECT
+				DISTINCT(MC.middle_CATEGORY_NAME) as middle_CATEGORY_NAME,
+				MC.middle_CATEGORY_ID
+			FROM
+				SMALL_CATEGORIES SC, MIDDLE_CATEGORIES MC, BIG_CATEGORIES BC
+			WHERE
+				SC.MIDDLE_CATEGORY_ID = MC.MIDDLE_CATEGORY_ID
+			AND
+				MC.BIG_CATEGORY_ID = BC.BIG_CATEGORY_ID
+			AND 
+				BC.BIG_CATEGORY_ID IN (100, 200, 300)) A,
+
+			(SELECT
+				M.middle_CATEGORY_NAME,
+				SUM(I.PROFIT) AS PROFIT,
+				sum(I.order_quantity)	as qty
+			FROM
+				(SELECT
+				I.ITEM_ID,
+				I.PRODUCT_ID,
+				((I.ITEM_SALE_PRICE - I.ITEM_ORIGINAL_PRICE) * OD.ORDER_QUANTITY) AS PROFIT,
+				OD.ORDER_ID,
+				OD.order_quantity
+				FROM
+				   ITEMS I, ORDER_DETAILS OD
+				WHERE 
+				   I.ITEM_ID = OD.ITEM_ID) I, ORDERS O, PRODUCTS P, SMALL_CATEGORIES SC, middle_CATEGORIES M
+			WHERE
+				   I.ORDER_ID = O.ORDER_ID
+			AND
+				   P.PRODUCT_ID = I.PRODUCT_ID
+			AND
+				P.SMALL_CATEGORY_ID = SC.SMALL_CATEGORY_ID
+			and 
+				SC.MIDDLE_CATEGORY_ID = M.MIDDLE_CATEGORY_ID
+			and to_char(ORDER_DATE, 'yyyy-mm') = #{selectDate}
+			GROUP BY 
+					M.middle_CATEGORY_NAME)B
+
+		WHERE A.middle_category_name = B.middle_CATEGORY_NAME(+)
+</select>
+
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

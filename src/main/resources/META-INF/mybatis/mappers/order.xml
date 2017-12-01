@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.orders.mappers.OrderMapper">
+
+	<select id="getSeq" resultType="int">
+		select order_seq.nextval from dual
+	</select>
+	
+	<insert id="addOrder" parameterType="Order">
+		insert into orders
+		(order_id, order_condition, order_message, delivery_id, customer_id, order_receiver, order_date, order_price)
+		values
+		(#{id}, #{condition}, #{message}, #{delivery.id, jdbcType=VARCHAR}, #{customer.id}, #{receiver}, sysdate, #{price})
+	</insert>
+	
+	<select id="getOrders" resultType="Order">
+		select 
+			order_id id,
+			order_condition condition,
+			order_message message, 
+			customer_id "customer.id",
+			delivery_id "delivery.id",
+			order_date orderDate,
+			order_price price
+		from orders
+			order by order_id desc
+		<!-- 주문은 최근 순으로(번호가 높은순으로) -->
+	</select>
+	
+	<select id="getOrder" resultType="Order" parameterType="int">
+		select 
+			order_id id,
+			order_condition condition,
+			order_message message, 
+			customer_id "customer.id",
+			delivery_id "delivery.id",
+			order_date orderDate,
+			order_price price
+		from 
+			orders
+		where 
+			order_id = #{value}
+	</select>
+	<select id="getOrdersByCustomer" resultType="Order" parameterType="map">
+		select 
+		order_id id,
+		order_condition condition,
+		order_message message, 
+		order_receiver receiver,
+		O.customer_id "customer.id",
+		O.delivery_id "delivery.id",
+		order_date orderDate,
+		order_price price,
+		
+		nvl (delivery_mainaddress , (select customer_mainaddress "delivery.mainAddress" from customers where customer_id = #{customer.id})) "delivery.mainAddress",
+		nvl (delivery_title , '기본 배송지') "delivery.title",
+		nvl (delivery_postalcode , (select customer_postalcode from customers where customer_id = #{customer.id})) "delivery.postalCode",
+		nvl (delivery_detailaddress , (select customer_detailaddress from customers where customer_id = #{customer.id} )) "delivery.detailAddress"
+		from orders O, deliveries D
+	where 
+		O.customer_id = #{customer.id}
+		and O.delivery_id = D.delivery_id(+)
+<if test="criteria.beginday != null">
+	and O.ORDER_DATE>= #{criteria.beginday}
+</if>
+<if test="criteria.endday != null">
+	and O.ORDER_DATE &lt;= #{criteria.endday}
+</if>
+	order by order_id desc
+	</select>
+</mapper>

@@ -1,0 +1,4 @@
+th, td{border:1px solid #ccc; text-align: center;}
+.btn_list {margin-bottom: 20px;}
+.btn_list button{cursor:default;}
+td a:hover{text-decoration:underline !important;}

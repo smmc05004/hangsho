@@ -1,0 +1,4 @@
+.deallist{float:left; margin-left: 30px; width: 80%;}
+.navi_wrap{float:left;}
+td:first-child+td+td a:hover{text-decoration:underline !important;}
+.calllist li{border: 1px solid #eee; padding:5px;}

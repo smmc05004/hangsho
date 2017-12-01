@@ -1,0 +1,21 @@
+table {border: 1px solid #ccc;}
+tbody tr:first-child>td:first-child+td{text-align: right;width:100px;padding-right: 20px;}
+.detailinfo {text-align: center;}
+.detailinfo th {border: 1px solid #ccc; width: 100px;font-weight: bold; text-align: center;}
+.detailinfo td:last-child{width:50px;}
+.contents{width:100%; border: 1px solid #ccc; margin:0 auto;}
+.btnlist {margin: 30px 0;}
+.btnlist>div{margin:10px 0;}
+.comments{margin: 0 auto;}
+.commentlist{border: 1px solid #ccc;padding: 0 10px;}
+.commentlist>div{border-bottom: 1px solid #ccc;padding: 10px 0;}
+.commentlist>div:nth-last-child(2){border: 0;}
+.commentlist>div:last-child{border-bottom: 0; border-top:1px solid #ccc;}
+.commentlist>div:first-child{border-top: 0 !important;}
+.commentlist p span{padding-left: 15px;color: #888;}
+.title{padding-left:24px !important;}
+.form-group{width: 100%;}
+.container .form-group textarea{height: 47px !important;}
+.comment textarea{width: 93% !important;}
+.replycomment textarea{width: 91.7% !important;}
+.comment{margin-top: 10px;}

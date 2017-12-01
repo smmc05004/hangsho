@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.orders.mappers.OrderDetailMapper">
+	
+	<resultMap type="OrderDetail" id="details">
+      <result property="orderId"  column="order_id"/>
+      <result property="orderQuantity" column="order_quantity"/>
+      <result property="realPrice" column="order_real_price"/>
+	  <result property="item.id" column="item_id" />
+	  <result property="item.product.id" column="product_id" />
+      <result property="item.salePrice" column="item_sale_price"/>
+      <result property="item.image.id" column="image_id"/>
+      <result property="item.initialQuantity" column="initial_quantity"/>
+      <result property="item.saledQuantity" column="saled_quantity"/>
+      <result property="item.options" column="item_option"/>
+      <result property="item.product.show" column="product_show"/>
+      <result property="item.product.name" column="product_name"/>
+      <result property="item.product.discountRatio" column="discount_ratio"/>
+      <result property="item.product.deliveryFee" column="delivery_fee"/>
+      <result property="item.product.company.id" column="company_id"/>
+      <result property="item.product.clicked" column="product_clicked"/>
+      <result property="item.product.image.id" column="image_id"/>
+      <result property="item.product.image.path" column="image_path"/>
+      <result property="item.product.smallCategory.id" column="small_category_id"/>
+      <result property="item.product.description" column="product_description"/>
+	</resultMap>
+
+
+<!--    <resultMap type="OrderDetail" id="detailMap">
+      <id property="item.id" column="item_id"/>
+      <result property="order.id"  column="order_id"/>
+      <result property="orderQuantity" column="order_quantity"/>
+      <result property="order.condition" column="order_condition"/>
+      <result property="order.orderDate" column="order_date"/>
+      <result property="order.message" column="order_message"/>
+      <result property="order.price" column="order_price"/>
+      <result property="item.product.id" column="product_id" />
+      <result property="item.salePrice" column="item_sale_price"/>
+      <result property="item.image.id" column="image_id"/>
+      <result property="item.initialQuantity" column="initial_quantity"/>
+      <result property="item.saledQuantity" column="saled_quantity"/>
+      <result property="item.options" column="item_option"/>
+      <result property="item.product.show" column="product_show"/>
+      <result property="item.product.name" column="product_name"/>
+      <result property="item.product.discountRatio" column="discount_ratio"/>
+      <result property="item.product.deliveryFee" column="delivery_fee"/>
+      <result property="item.product.company.id" column="company_id"/>
+      <result property="item.product.clicked" column="product_clicked"/>
+      <result property="item.product.image.id" column="image_id"/>
+      <result property="item.product.smallCategory.id" column="small_category_id"/>
+      <result property="item.product.description" column="product_description"/>
+   </resultMap> -->
+<!--    <resultMap type="OrderDetail" id="detailMap">
+      <id property="productDetail.id" column="product_detail_id"/>
+      <result property="order.id"  column="order_id"/>
+      <result property="orderQuantity" column="order_quantity"/>
+      <result property="order.condition" column="order_condition"/>
+      <result property="order.orderDate" column="order_date"/>
+      <result property="order.message" column="order_message"/>
+      <result property="order.price" column="order_price"/>
+      <result property="productDetail.product.id" column="product_id" />
+      <result property="productDetail.price" column="product_detail_price"/>
+      <result property="productDetail.image.id" column="image_id"/>
+      <result property="productDetail.initialQuantity" column="initial_quantity"/>
+      <result property="productDetail.saledQuantity" column="saled_quantity"/>
+      <result property="productDetail.option" column="product_detail_option"/>
+      <result property="productDetail.product.show" column="product_show"/>
+      <result property="productDetail.product.name" column="product_name"/>
+      <result property="productDetail.product.discountRatio" column="discount_ratio"/>
+      <result property="productDetail.product.deliveryFee" column="delivery_fee"/>
+      <result property="productDetail.product.company.id" column="company_id"/>
+      <result property="productDetail.product.clicked" column="product_clicked"/>
+      <result property="productDetail.product.image.id" column="image_id"/>
+      <result property="productDetail.product.smallCategory.id" column="small_category_id"/>
+      <result property="productDetail.product.product.description" column="product_description"/>
+   </resultMap> -->
+
+   <select id="getOrderDetailsByCustomer" resultType="map" resultMap="details" parameterType="map">
+      select *
+from ORDER_DETAILS OD, orders O, ITEMS I, PRODUCTS P, IMAGES img
+where 
+	OD.order_id  = O.order_id 
+and O.CUSTOMER_ID = #{customer.id} 
+and OD.ITEM_ID = I.ITEM_ID 
+and I.PRODUCT_ID = P.PRODUCT_ID 
+and img.image_id = I.image_id
+<if test="criteria.beginday != null">
+	and O.ORDER_DATE>= #{criteria.beginday}
+</if>
+<if test="criteria.endday != null">
+	and O.ORDER_DATE &lt;= #{criteria.endday}
+</if>
+order by OD.order_id desc, OD.item_id asc
+   </select>
+   
+   <select id="getOrderDetailsByOrderId" resultType="OrderDetail" parameterType="int">
+   		select
+   			order_id	as orderId,
+   			item_id		as "item.id",
+   			order_quantity	as orderQuantity,
+   			order_real_price	as realPrice
+   		from
+   			order_details
+   		where
+   			order_id = ${value}
+   </select>
+	<insert id="addOrderDetail" parameterType="OrderDetail">
+		insert into order_details
+		(order_id, item_id, order_quantity, order_real_price)
+		values
+		(#{orderId}, #{item.id}, #{orderQuantity}, #{realPrice})
+	</insert>
+</mapper>

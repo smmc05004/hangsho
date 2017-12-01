@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd">
+
+	<mvc:annotation-driven />
+	
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/*.do"/>
+			<mvc:mapping path="/*/*.do"/>
+			<ref bean="loginCheckerInterceptor"/>
+		</mvc:interceptor>
+		
+		<mvc:interceptor>
+			<mvc:mapping path="/customers/*.do"/>
+			<mvc:mapping path="/company/*.do"/>
+			<mvc:mapping path="/product/*.do"/>
+			 <ref bean="userTypeCheckInterceptor"/>			
+		</mvc:interceptor>
+	</mvc:interceptors>
+	
+
+	<bean id="loginCheckerInterceptor" class="kr.co.hangsho.web.interceptor.LoginCheckInterceptor">
+		<property name="urlSets" ref="loginCheckPassUrlSet"></property>
+	</bean>
+	
+	<bean id="userTypeCheckInterceptor" class="kr.co.hangsho.web.interceptor.UserTypeCheckInterceptor">
+		<property name="customerUrlSets" ref="customerCheckUrlSet"></property>
+		<property name="companyUrlSets" ref="companyCheckUrlSet"></property>
+	</bean>
+	
+	<util:set id="loginCheckPassUrlSet">
+		<value>/index.do</value>
+		<value>/search.do</value>
+		<value>/mail-send.do</value>
+		<value>/customers/login.do</value>
+		<value>/customers/logout.do</value>
+		<value>/customers/logincheck.do</value>
+		<value>/customers/register.do</value>
+		<value>/customers/addcustomer.do</value>
+		<value>/merona/index.do</value>
+		<value>/merona/detail.do</value>
+		<value>/used/index.do</value>
+		<value>/used/detail.do</value>
+		<value>/admin/*.do</value>
+		<value>/company/register.do</value>
+		<value>/company/add.do</value>
+		<value>/hangshoproducts/detail.do</value>
+		<value>/hangshoproducts/getQueContent.do</value>
+		<value>/hangshoproducts/getProquelist.do</value>
+		<value>/hangshoproducts/getProDetail.do</value>
+		<value>/hangshoproducts/getAnsContent.do</value>
+		<value>/hangshoproducts/getReviewList.do</value>
+		<value>/productList.do</value>
+		<!-- adminCheckPassUrlSet -->
+		<value>/admin/login.do</value>
+		<value>/admin/logincheck.do</value>
+		<value>/admin/send-code.do</value>
+		
+	</util:set>
+
+<util:set id="customerCheckUrlSet">
+	<value>/customers/qnalist.do</value>
+	<value>/customers/membership.do</value>
+	<value>/customers/info.do</value>
+	<value>/customers/info-update.do</value>
+	<value>/order/orderPage.do</value>
+	<value>/order/addOrder.do</value>
+	<value>/cart/cart.do</value>
+</util:set>
+
+<util:set id="companyCheckUrlSet">
+	<value>/company/index.do</value>
+	<value>/company/modify.do</value>
+	<value>/product/form.do</value>
+	<value>/product/add.do</value>
+	<value>/product/list.do</value>
+	<value>/product/modifyForm.do</value>
+</util:set>
+
+
+	<util:map id="imagePathMap">
+		<!-- 식품 -->
+		<entry key="111" value="/resources/images/food/fruits/domestic/"/>
+		<entry key="112" value="/resources/images/food/fruits/imported/"/>
+		<entry key="113" value="/resources/images/food/fruits/iced/"/>
+		
+		<entry key="121" value="/resources/images/food/vegetable/cabbage/"/>
+		<entry key="122" value="/resources/images/food/vegetable/herb/"/>
+		<entry key="123" value="/resources/images/food/vegetable/salad/"/>
+
+		<entry key="131" value="/resources/images/food/meat/pork/"/>
+		<entry key="132" value="/resources/images/food/meat/beef/"/>
+		<entry key="133" value="/resources/images/food/meat/chicken/"/>
+	
+		<!-- 패션 -->
+		<entry key="211" value="/resources/images/fashion/womanclothes/shirts/"/>
+		<entry key="212" value="/resources/images/fashion/womanclothes/pants/"/>
+		<entry key="213" value="/resources/images/fashion/womanclothes/skirt/"/>
+
+		<entry key="221" value="/resources/images/fashion/manclothes/shirts/"/>
+		<entry key="222" value="/resources/images/fashion/manclothes/pants/"/>
+		<entry key="223" value="/resources/images/fashion/manclothes/suits/"/>
+
+		<entry key="231" value="/resources/images/fashion/bag/back/"/>
+		<entry key="232" value="/resources/images/fashion/bag/cross/"/>
+		<entry key="233" value="/resources/images/fashion/bag/clutch/"/>
+		
+		<!-- 가전 -->
+		<entry key="311" value="/resources/images/appliance/kitchen/pot/"/>
+		<entry key="312" value="/resources/images/appliance/kitchen/oven/"/>
+		<entry key="313" value="/resources/images/appliance/kitchen/coffee/"/>
+
+		<entry key="321" value="/resources/images/appliance/life/vaccum/"/>
+		<entry key="322" value="/resources/images/appliance/life/telephone/"/>
+		<entry key="323" value="/resources/images/appliance/life/stand/"/>
+
+		<entry key="331" value="/resources/images/appliance/health/massage/"/>
+		<entry key="332" value="/resources/images/appliance/health/skin/"/>
+		<entry key="333" value="/resources/images/appliance/health/bidet/"/>
+	
+	</util:map>
+	
+	<util:set id="urlSets">
+		<value>/index.do</value>
+		<value>/customers/login.do</value>
+		<value>/customers/register.do</value>
+		<value>/customers/index.do</value>
+	</util:set>
+
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/views/" />
+		<property name="suffix" value=".jsp" />
+	</bean>	
+	
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="defaultEncoding" value="utf-8"></property>
+		<!-- max upload size in bytes -->
+		<property name="maxUploadSize" value="20971520" /> <!-- 20MB -->
+		<!-- max size of file in memory (in bytes) -->
+		<property name="maxInMemorySize" value="1048576" /> <!-- 1MB -->
+	</bean>
+		
+	<context:component-scan base-package="kr.co.hangsho">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+		<context:include-filter type="annotation" expression="org.springframework.web.bind.annotation.ControllerAdvice"/>
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/>
+	</context:component-scan>
+	
+	<context:property-placeholder location="classpath:/META-INF/config.properties"/>
+	
+</beans>

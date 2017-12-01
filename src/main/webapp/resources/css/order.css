@@ -1,0 +1,90 @@
+		
+		#cashMargin {
+			margin-top: 21px;
+		}
+		.hide {
+			display:none;
+		}
+		.inputline {
+            border-bottom: 1px solid #000;
+            border-bottom-color: darkgray;
+            padding: 10px;
+        }
+        .paddingtop {
+            padding-top: 15px;
+        }
+        .d {
+            color: #ff6600;
+        }
+        .pd {
+            border-bottom:3px solid #000;
+            border-bottom-color: darkgray;
+            padding-bottom: 20px;
+            padding-top: 15px;
+        }
+        
+        .spd {
+            border-bottom: 1px solid #000;
+            border-bottom-color: darkgray;
+            padding: 10px;
+        }
+        .btnposition {
+            border-bottom: 1px solid #000;
+            border-bottom-color: darkgray;
+            padding: 12px;
+        }
+       
+        .gray {
+            color: darkgrey;
+        }
+        .ck {
+            padding: 40px;
+        }
+        .row {
+            padding: 10px;
+        }
+        .spds {
+            border-bottom: 1px solid #000;
+            border-bottom-color: darkgray;
+            padding: 22px;
+        }
+        .spdss {
+            border-bottom: 1px solid #000;
+            border-bottom-color: darkgray;
+            padding: 17px;
+        }
+        .coup{
+            border-bottom: 1px solid #000;
+            border-bottom-color: darkgray;
+            padding: 15px;
+            
+        }
+        .coups{
+            border-bottom: 1px solid #000;
+            border-bottom-color: darkgray;
+            padding: 10px;
+        }
+        .coups span {margin-left: 20px;}
+        .song {
+            border-bottom: 1px solid #000;
+            border-bottom-color: darkgray;
+            padding: 17px;
+            text-align: center;
+        }
+        .sm {
+            border-bottom: 1px solid #000;
+            border-bottom-color: darkgray;
+            
+        }
+        #blue {
+            color: blue;
+            text-align: center;
+            padding-top: 50px;
+        }
+        .kk {
+            text-align: center;
+            padding-top: 50px;
+        }
+        .right {
+            text-align: right;
+        }

@@ -1,0 +1,32 @@
+ #service {
+       border: 1px solid gray;
+    }
+    #search-btn {
+        background: darkorange;
+        color: white;
+    }
+    #search-box {
+        padding-top: 30px;
+        border: 5px solid darkgray;
+        height: 130px;
+    }
+    #customer-center {
+        height: 100px;
+        width: 100px;
+    }
+    a {
+        color: black;
+    }
+    #keyword {
+        color: ff5000;
+        font-weight: 1000;
+    }
+    #keyword-word {
+        color: #f2f2f2;
+    }
+    #middle-btn {
+        padding-top: 30px;
+    }
+    #notice-table {
+        padding-top: 30px;
+    }

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.customers.mappers.CustomerMapper">
+
+	<select id="getSeq" resultType="int">
+		select customer_seq.nextval from dual
+	</select>
+
+	<select id="getCustomers" resultType="Customer">
+		select
+		customer_id id,
+		customer_name name,
+		customer_username username,
+		customer_password password,
+		customer_phonenumber phonenumber,
+		customer_mainaddress mainaddress,
+		customer_detailaddress detailaddress,
+		customer_postalcode postalcode,
+		customer_nickname nickname,
+		customer_grade grade
+		from
+		customers
+		order by customer_id asc
+	</select>
+
+	<insert id="addCustomer" parameterType="Customer">
+		insert into customers
+		(customer_id, customer_name, customer_username, customer_password, customer_phonenumber, customer_mainaddress, customer_detailaddress, customer_postalcode, customer_nickname)
+		values
+		(#{id}, #{name}, #{username}, #{password}, #{phonenumber}, #{mainaddress}, #{detailaddress}, #{postalcode}, #{nickname})
+	</insert>
+	
+	<select id="getCustomer" parameterType="string" resultType="Customer">
+		select
+		customer_id id,
+		customer_name name,
+		customer_username username,
+		customer_password password,
+		customer_phonenumber phonenumber,
+		customer_mainaddress mainaddress,
+		customer_detailaddress detailaddress,
+		customer_postalcode postalcode,
+		customer_nickname nickname,
+		customer_grade grade
+		from
+		customers
+		where customer_username = #{value}
+	</select>
+	
+	<select id="getCustomerByNo" parameterType="int" resultType="Customer">
+		select
+		customer_id id,
+		customer_name name,
+		customer_username username,
+		customer_password password,
+		customer_phonenumber phonenumber,
+		customer_mainaddress mainaddress,
+		customer_detailaddress detailaddress,
+		customer_postalcode postalcode,
+		customer_nickname nickname,
+		customer_grade grade,
+		customer_point point
+		from
+		customers
+		where customer_id = #{value}
+	</select>
+	
+	<update id="updateCustomer" parameterType="Customer">
+		update customers
+		set
+		<if test="password != null">
+		customer_password = #{password},
+		</if>
+		customer_phonenumber = #{phonenumber},
+		customer_mainaddress = #{mainaddress},
+		customer_detailaddress = #{detailaddress},
+		customer_postalcode = #{postalcode}
+		where customer_id = #{id}
+	</update>
+	
+	<update id="pointUpdate" parameterType="int">
+		update customers
+		set customer_point = customer_point - #{point}
+		where customer_id = #{id}
+	</update>
+	
+	
+	
+</mapper>

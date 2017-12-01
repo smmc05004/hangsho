@@ -1,0 +1,177 @@
+        .quespro {
+            margin-bottom: 15px;
+        }
+        
+       
+        
+        .centerman {
+            text-align: center;
+        }
+        
+        #search-form {
+            width: 847px;
+        }
+        
+        .itemques {
+            margin-left: 15px;
+        }
+        
+        .centerman {
+            text-align: center;
+        }
+        
+        .mar {
+            margin-right: 15px;  
+        }
+        
+        #sc {
+            padding-bottom: 0px;
+            z-index: 999;
+        }
+        
+        .bgc {
+            
+        }
+        
+        .rig {
+            margin-left: 300px;
+        }
+        
+        .hei {
+            height: 550px;
+        }
+        
+        .nb {
+            margin-bottom: 10px;
+        }
+        
+        .nbs {
+            margin-bottom: 2px;
+        }
+        
+        .mainbody {
+            position: relative;
+            
+        }
+        
+        .line {
+            position: absolute;
+            border: 1px solid darkgrey;
+            top: 52px;
+            left: 50%;
+            margin-left: 290px;
+            padding: 30px;
+            width: 280px;
+            height: 850px;
+        }
+        
+        .bg {
+            background-color: white;
+        }
+        
+        p {
+            padding: 10px;
+        }
+        
+        p span {
+            color: gray;
+        }
+        
+        .fashion {
+            padding: 5px;
+            color: aliceblue;   
+        }
+        
+        del {
+            color: gray;
+        }
+        
+        div strong h3 {
+            color: black;
+        }
+        
+        .bor {
+            border: solid #000;
+            border-color: darkgray;
+            background-color:#f2f2f2;
+            margin-right: -10px;
+        }
+        
+        .back {
+            border-color: orange;
+            color: orange;
+        }
+        
+         /* #lin {
+            left: -40px;
+            list-style: none;
+            padding: 10px;
+            display: inline-block;
+            border: 1px solid darkgray;
+            position: relative;
+            background-color: #dddd;
+            width: 494px;
+            height: 49px;
+        }
+         */
+         
+         .remain-item-number {
+         	height: 49px;
+         	width: 494px;
+         	margin-bottom: 20px;
+         	border: 1px solid #dedede;
+         	background-color: #f9f9f9;
+         	text-align: center;
+         	line-height: 47px; 
+         }
+         
+         #product-selection {
+         	height: 32px;
+         	width: 494px;
+         	display: block;
+         	padding: 6px 12px;
+         	font-size: 14px;
+         }
+         
+        ul {
+            padding-bottom: 50px;
+        }
+        
+        button {
+            padding: 200px;
+        }
+        
+        #d {
+            color: #ff6600;
+        }
+        
+        .d{
+             color: #ff6600;
+            
+        }
+        
+        #back {
+            background-color: black;
+            color: aliceblue;
+        }
+        
+        #itemname {
+            width: 380px;
+            margin: 3px;
+        }
+        .left {
+        	margin-left: 30px;
+        }
+        .btn-group {
+        	margin-top: 7px;
+        }
+        .quescaution {
+            margin-top: 20px;
+            margin-bottom: 5px;
+            color: darkorange;
+        }
+        .quemodal {
+        	width: 550px;
+        }
+        
+        

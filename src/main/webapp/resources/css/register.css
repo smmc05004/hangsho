@@ -1,0 +1,37 @@
+ .big-checkbox {
+            width: 30px;
+            height: 30px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .form-control {
+            height: 50px;
+        }
+
+        .login-area {
+            margin-top: 4px;
+            margin-left: 2px;
+            line-height: 30px;
+            vertical-align: middle;
+            font-size: 12px;
+        }
+
+        .input-alert {
+            border-color: red;
+        }
+
+        a.hovering: hover a+div {
+            visibility: visible;
+        }
+
+        ) a+div {
+            visibility: hidden;
+        }
+        .container{
+        	margin-top : 20px;
+        }
+        .postal-area{
+        	width: 42%;
+        	display: inline-block;
+        }

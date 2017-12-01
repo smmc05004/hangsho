@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.products.mappers.ProductDetailMapper">
+
+	<select id="getProductDetails" resultType="ProductDetail">
+	</select>
+	<select id="getProductDetailsByProduct" resultType="ProductDetail" parameterType="Product">
+		select
+			product_detail_id id,
+			product_detail_option "option",
+			initial_quantity initialQuantity,
+			saled_quantity saledQuantity,
+			product_id "product.id",
+			product_detail_price price,
+			image_id "image.id"
+		from 
+			product_details
+		where
+			product_id = #{id}
+	</select>
+	<select id="getProductDetail" resultType="ProductDetail" parameterType="int">
+		select
+			product_detail_id id,
+			product_detail_option "option",
+			initial_quantity initialQuantity,
+			saled_quantity saledQuantity,
+			product_id "product.id",
+			product_detail_price price,
+			image_id "image.id"
+		from 
+			product_details
+		where
+			product_id = #{product.id}
+	</select>
+	<select id="getProductDetailsByOrder" resultType="ProductDetail" parameterType="Order">
+		select
+			product_detail_id id,
+			product_detail_option "option",
+			initial_quantity initialQuantity,
+			saled_quantity saledQuantity,
+			product_id "product.id,"
+			product_detail_price price,
+			image_id "image.id"
+		from 
+			product_details
+		where
+			product_id in (select product_detail_id from orders where order_id = #{id})
+	</select>
+	<select id="getProductDetailsByCustomer" resultType="ProductDetail" parameterType="Customer">
+		select
+			product_detail_id id,
+			product_detail_option "option",
+			initial_quantity initialQuantity,
+			saled_quantity saledQuantity,
+			product_id "product.id",
+			product_detail_price price,
+			image_id "image.id"
+		from 
+			product_details
+		where
+			product_detail_id in 	(	
+											select product_detail_id
+											from order_details
+											where order_id in (
+																		select order_id
+																		from orders
+																		where customer_id = #{id})
+											)
+	</select>
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

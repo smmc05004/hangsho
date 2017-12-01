@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.products.mappers.ProductAnsMapper">
+
+	<select id="getSeq" resultType="int">
+		select
+			product_a_seq.nextval
+		from dual
+	</select>
+	
+	<insert id="addProductAns" parameterType="ProductAns">
+		insert into product_a
+		(product_q_id, product_a_id, product_a_answer, product_a_createdate, company_id)
+		values
+		(#{qna.id}, #{id}, #{answer}, sysdate, #{company.id})
+	</insert>
+	
+	<select id="getProductAns" resultType="ProductAns">
+		select
+			product_q_id				as "qna.id",
+			product_a_id				as id,
+			product_a_answer			as answer,
+			product_a_createdate		as createDate,
+			company_id					as "company.id"
+		from 
+			product_a
+	</select>
+	
+	<select id="getProductAnsByProQueId" parameterType="int" resultType="ProductAns">
+		select
+			A.product_q_id					as "qna.id",
+			A.product_a_id					as id,
+			A.product_a_answer				as answer,
+			A.product_a_createdate			as createDate,
+			A.company_id					as "company.id",
+			C.company_username				as "company.username"
+		from 
+			product_a A, product_q Q, companies C
+		where
+			A.product_q_id = Q.product_q_id
+		and
+			Q.product_q_id = #{value}
+		and
+			A.company_id = C.company_id
+		order by
+			A.product_q_id desc	
+	</select>
+	
+	<select id="getTotalRows" parameterType="Criteria" resultType="int">
+		select
+			count(*)
+		from
+			product_a A, product_q Q, companies C
+		where
+			A.product_q_id = Q.product_q_id
+		and
+			Q.product_q_id = #{value}
+		and
+			A.company_id = C.company_id
+		
+	</select>
+	
+	<select id="getProductAnss" parameterType="Criteria" resultType="ProductAns">
+		select
+			product_q_id					as "qna.id",
+			product_a_id					as id,
+			product_a_answer				as answer,
+			product_a_createdate			as createDate,
+			company_id						as "company.id",
+			company_username				as "company.username"
+		from (
+			select
+				row_number() over (order by product_q_id desc) rn,
+				A.product_q_id,					
+				A.product_a_id,					
+				A.product_a_answer,				
+				A.product_a_createdate,			
+				A.company_id,					
+				C.company_username
+			from
+				product_a A, product_q Q, companies C
+			where
+				A.product_q_id = Q.product_q_id
+			and
+				Q.product_q_id = #{value}
+			and
+				A.company_id = C.company_id						
+			)
+		where rn >= #{beginIndex} and rn &lt;= #{endIndex}
+	</select>
+	
+	<select id="getProductAnswerByQuestionId" parameterType="int" resultType="ProductAns">
+		SELECT
+			A.PRODUCT_Q_ID 			as "qna.id",
+			A.PRODUCT_A_ID 			as id,
+			A.PRODUCT_A_ANSWER 		as answer,
+			A.PRODUCT_A_CREATEDATE 	as createDate,
+			A.COMPANY_ID 			as "company.id",
+			Q.PRODUCT_Q_QUESTION 	as "qna.question",
+			Q.CUSTOMER_ID 			as "qna.customer.id",
+			Q.PRODUCT_Q_CREATEDATE 	as "qna.createDate",
+			Q.PRODUCT_Q_DELETED 	as "qna.deleted",
+			Q.PRODUCT_Q_TITLE		as "qna.title",
+			Q.PRODUCT_Q_STATUS 		as "qna.status"
+		FROM
+			PRODUCT_A A, PRODUCT_Q Q
+		WHERE
+			A.PRODUCT_Q_ID = Q.PRODUCT_Q_ID
+		AND
+			A.PRODUCT_Q_ID = #{value}
+	</select>
+	
+</mapper>
+

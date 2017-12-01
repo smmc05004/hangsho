@@ -1,0 +1,93 @@
+	
+ 	ul>li>ul>li {
+        list-style: none;
+        margin-top: 10px;
+    }
+    thead tr th {
+        text-align: center;
+    }
+    tbody tr {
+        margin: 10px, 20px;
+        border-bottom-color: gray;
+        border-top-color: gray;
+    }
+   .deleteList > img {
+        height: 60px;
+        width: 100px;
+    }
+    .header h2 p {
+        display: inline-block;
+        color: #ff5000;
+    }
+    #product-detail {
+        font-size: small;
+        display: inline-block;
+    }
+    #delivery-btn {
+        color: #ff5000;
+        border-color: #ff5000;
+    }
+    td {
+        border-bottom-color: gray;
+        padding-top: 24px;
+    }
+    #amount-input {
+        width: 20px; height: 22px;
+    }
+    a {
+        color: black;
+    }
+    #product-title {
+        margin-left: 20px;
+    }
+    input[type=checkbox] {
+        height: 24px;
+        width:  24px;
+    }
+    thead {
+        border-top: 2px solid gray;
+    }
+    tbody tr div {
+        padding-left: 20px; 
+    }
+    #product-price, #delivery-btn {
+        display: flex;
+        justify-content: center;
+        margin-top: 40px;
+    }
+    #bottom-button-group {
+         display:inline-block;
+        margin-bottom: 20px;
+    }
+    table {
+        border-color: gray;
+    }
+    #keep-shoppig-btn, #purchasing {
+        width: 276px;
+        height: 64px;
+    }
+    #keep-shoppig-btn {
+        color: darkorange;
+        border-color: darkorange;
+        font-weight: bold;
+    }
+    #purchasing {
+        background-color: darkorange;
+        color: white;
+        font-weight: bold;
+    }
+    #btn-area {
+        padding: 107px 0 100px;
+        float: left;
+        position: relative;
+        width: 100%;
+        font-size: 0;
+        text-align: center;
+    }
+    #btn-area p {
+        justify-content: center;
+        margin-top: 15px;
+    }
+    #total-price {
+        
+    }

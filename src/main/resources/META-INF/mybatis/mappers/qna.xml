@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.qnas.mappers.QnaMapper">
+	
+	<insert id="addQna" parameterType="Qna">
+	 	insert into qnas
+	 	(qna_id, qna_createdate, qna_title, qna_contents, qna_attached_file, qna_type, customer_id)
+	 	values
+	 	(#{qna.id}, sysdate, #{qna.contents}, #{qna.attachedFile}, #{qna.type}, #{customer.id})
+	</insert>
+	
+	<insert id="addQnaReply" parameterType="Qna">
+		insert into qnas
+		(qna_id, qna_replydate, qna_contents, qna_type, qna_reply_id)
+		values
+		(#{id}, sysdate, #{contents}, '답변', #{id})
+	</insert>
+	
+	<update id="updateQna" parameterType="Qna">
+		update qnas
+		set 
+			qna_reply_id = #{replyId}
+		where 
+			qna_id = #{id}
+	</update>
+	
+	<select id="getSeq" resultType="int">
+		select qna_seq.nextval
+		from dual
+	</select>
+
+	<select id="getQnas" resultType="Qna">
+		select 
+			Q.qna_id							as id,
+			Q.qna_createdate			as createDate,
+			Q.qna_replydate				as replyDate,
+			Q.qna_title						as title,
+			Q.qna_contents				as contents,
+			Q.qna_attached_file		as attachedFile,
+			Q.qna_type						as type,
+			C.customer_id					as "customer.id",
+			C.customer_name			as "customer.name",
+			Q.qna_reply_id				as replyId
+		from
+			qnas Q, customers C
+		where 
+			Q.customer_id = C.customer_id
+	</select>
+	
+	<select id="getQnaByQnaId" parameterType="int" resultType="Qna">
+		select 
+			Q.qna_id							as id,
+			Q.qna_createdate			as createDate,
+			Q.qna_replydate				as replyDate,
+			Q.qna_title						as title,
+			Q.qna_contents				as contents,
+			Q.qna_attached_file		as attachedFile,
+			Q.qna_type						as type,
+			C.customer_id					as "customer.id",
+			C.customer_name			as "customer.name",
+			Q.qna_reply_id				as replyId
+		from
+			qnas Q, customers C
+		where 
+			Q.customer_id = C.customer_id(+)
+			and Q.qna_id = #{value}
+	</select>
+	
+	<select id="getQnasByCustomer" resultType="Qna" parameterType="Customer">
+		select 
+			Q.qna_id							as id,
+			Q.qna_createdate			as createDate,
+			Q.qna_replydate				as replyDate,
+			Q.qna_title						as title,
+			Q.qna_contents				as contents,
+			Q.qna_attached_file		as attachedFile,
+			Q.qna_type						as type,
+			C.customer_id					as "customer.id",
+			C.customer_name			as "customer.name",
+			Q.qna_reply_id				as replyId
+		from
+			qnas Q, customers C
+		where 
+			Q.customer_id = C.customer_id
+		and C.customer_id = ${id}
+	</select>
+	
+
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

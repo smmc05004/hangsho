@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.products.mappers.ProductMapper">
+
+	<select id="getSeq" resultType="int">
+		select
+			product_seq.nextval 
+		from
+			dual
+	</select>
+
+	<insert id="addProduct" parameterType="Product">
+		insert into products
+		(product_id, small_category_id, product_description, company_id, image_id, discount_ratio, product_name)
+		values
+		(#{id}, #{smallCategory.id}, #{description}, #{company.id}, #{image.id}, #{discountRatio}, #{name})
+	</insert>
+	
+	<!-- 상품페이지 상품리스트 -->
+
+	<select id="getProductList" parameterType="Criteria" resultType="Product">
+		select
+			P.product_id				as id,
+			P.small_category_id			as "smallCategory.id",
+			P.delivery_fee				as deliveryFee,
+			P.product_description		as description,
+			P.product_clicked			as clicked,
+			C.company_id				as "company.id",
+			C.company_name				as "company.name",
+			P.image_id					as "image.id",
+			P.discount_ratio			as discountRatio,
+			P.product_name				as name,
+			P.product_show				as show,
+			P.product_createdate		as createDate
+		from
+			products P, companies C
+		where
+			P.company_id = C.company_id
+			and P.product_show = 'Y'
+	</select>
+	
+	<!-- 관리자용 상품리스트 -->
+	<select id="getProductsForAdmin" parameterType="Criteria" resultType="Product">
+		select
+			P.product_id				as id,
+			P.small_category_id			as "smallCategory.id",
+			P.delivery_fee				as deliveryFee,
+			P.product_description		as description,
+			P.product_clicked			as clicked,
+			C.company_id				as "company.id",
+			C.company_name				as "company.name",
+			P.image_id					as "image.id",
+			P.discount_ratio			as discountRatio,
+			P.product_name				as name,
+			P.product_show				as show,
+			P.product_createdate		as createDate
+		from
+			products P, companies C
+		where
+			P.company_id = C.company_id
+			<if test="keyword != ''">
+				<choose>
+					<when test="opt == 'title'">
+						and P.product_name like '%' || #{keyword} || '%'
+					</when>
+					<when test="opt == 'seller'">
+						and C.company_name like '%' || #{keyword} || '%'
+					</when>
+				</choose>
+			</if>
+			<if test="beginday != null">
+				and product_createdate &gt;= #{beginday}
+			</if>
+			<if test="endday != null">
+				and product_createdate &lt; #{endday} + 1
+			</if>
+	</select>
+	
+	<select id="getProductByProductNo" parameterType="int" resultType="Product">
+		select
+			product_id				as id,
+			small_category_id		as "smallCategory.id",
+			delivery_fee			as deliveryFee,
+			product_description		as description,
+			product_clicked			as clicked,
+			company_id				as "company.id",
+			image_id				as "image.id",
+			discount_ratio			as discountRatio,
+			product_name			as name,
+			product_show			as show,
+			product_createdate		as createDate
+		from
+			products
+		where 
+			product_id = #{value}
+	</select>
+	
+	<select id="getProductBySmallCategoryNo" parameterType="int" resultType="Product">
+		select
+			product_id				as id,
+			small_category_id		as "smallCategory.id",
+			delivery_fee			as deliveryFee,
+			product_description		as description,
+			product_clicked			as clicked,
+			company_id				as "company.id",
+			image_id				as "image.id",
+			discount_ratio			as discountRatio,
+			product_name			as name,
+			product_show			as show,
+			product_createdate		as createDate
+		from
+			products
+		where 
+			small_category_id = #{value}
+	</select>
+	
+	<!-- 기업고객용 리스트 -->
+	<select id="getProductsByComId" parameterType="map" resultType="Product">
+		select
+			product_id				as id,
+			small_category_id		as "smallCategory.id",
+			delivery_fee			as deliveryFee,
+			product_description		as description,
+			product_clicked			as clicked,
+			company_id				as "company.id",
+			company_name			as "company.name",
+			image_id				as "image.id",
+			discount_ratio			as discountRatio,
+			product_name			as name,
+			product_show			as show,
+			small_category_name		as "smallCategory.name",
+			product_createdate		as createDate
+		from(
+			select
+				row_number() over(order by product_id desc) rn,
+				P.product_id,
+				P.small_category_id,
+				P.delivery_fee,
+				P.product_description,
+				P.product_clicked,
+				C.company_id,
+				C.company_name,
+				P.image_id,
+				P.discount_ratio,
+				P.product_name,
+				P.product_show,
+				S.small_category_name,
+				P.product_createdate
+			from 
+				products P, small_categories S, companies C
+			where
+				P.company_id = C.company_id
+			and
+				P.small_category_id = S.small_category_id
+			and
+				P.company_id = #{companyId}
+				<if test="criteria.keyword != null">
+					<choose>
+						<when test="criteria.opt == 'productName'">
+							and product_name like '%' || #{criteria.keyword} || '%'
+						</when>
+						<when test="criteria.opt == 'category'">
+							and small_category_name like '%' || #{criteria.keyword} || '%'
+						</when>
+						<when test="criteria.opt == 'show'">
+							and product_show like '%' || #{criteria.keyword} || '%'
+						</when>
+					</choose>
+				</if>
+				<if test="criteria.beginday != null">
+					and product_createdate &gt; #{criteria.beginday}
+				</if>
+				<if test="criteria.endday != null">
+					and product_createdate &lt; #{criteria.endday} + 1
+				</if>
+			)
+			where rn >= #{criteria.beginIndex} and rn &lt;= #{criteria.endIndex}
+	</select>
+	
+	<select id="getTotalRows" parameterType="map" resultType="int">
+		select
+			count (*)
+		from
+			products P, small_categories S, companies C
+		where
+			P.company_id = C.company_id
+		and
+			P.small_category_id = S.small_category_id
+		and
+			P.company_id = #{companyId}
+			<if test="criteria.keyword != null">
+				<choose>
+					<when test="criteria.opt == 'productName'">
+						and product_name like '%' || #{criteria.keyword} || '%'
+					</when>
+					<when test="criteria.opt == 'category'">
+						and small_category_name like '%' || #{criteria.keyword} || '%'
+					</when>
+					<when test="criteria.opt == 'show'">
+						and product_show like '%' || #{criteria.keyword} || '%'
+					</when>
+				</choose>
+			</if>
+			<if test="criteria.beginday != null">
+				and product_createdate &gt; #{criteria.beginday}
+			</if>
+			<if test="criteria.endday != null">
+				and product_createdate &lt; #{criteria.endday} + 1
+			</if>
+	</select>
+	
+	<select id="getProductsNameByNo" parameterType="int" resultType="Product">
+		select
+			product_id				as id,
+			small_category_id		as "smallCategory.id",
+			delivery_fee			as deliveryFee,
+			product_description		as description,
+			product_clicked			as clicked,
+			company_id				as "company.id",
+			image_id				as "image.id",
+			discount_ratio			as discountRatio,
+			product_name			as name,
+			product_show			as show,
+			product_createdate		as createDate
+		from
+			products
+		where 
+			small_category_id = #{value}
+	</select>
+	
+	<select id="getProductById" parameterType="int" resultType="Product">
+		select
+			product_id				as id,
+			small_category_id		as "smallCategory.id",
+			delivery_fee			as deliveryFee,
+			product_description		as description,
+			product_clicked			as clicked,
+			C.company_id				as "company.id",
+			company_name		as "company.name",
+			image_id				as "image.id",
+			discount_ratio			as discountRatio,
+			product_name			as name,
+			product_show			as show,
+			product_createdate		as createDate
+		from
+			products P, companies C
+		where 
+			product_id = #{value}
+			and P.company_id = C.company_id
+	</select>
+	
+	<delete id="deleteProductById" parameterType="int">
+		delete from products
+		where 
+			product_id = #{value}
+	</delete>
+	
+	<update id="modifyProduct" parameterType="Product">
+		update products
+		set
+			product_show = #{show}
+		where
+			product_id = #{id}
+	</update>
+	
+	<update id="updateProduct" parameterType="Product">
+		update products
+		set
+			product_name 		= #{name},
+			small_category_id 	= #{smallCategory.id},
+			delivery_fee		= #{deliveryFee},
+			product_description = #{description},
+			discount_ratio 		= #{discountRatio} 
+		where
+			product_id = #{id}
+	</update>
+		
+	<select id="getProductsForIndex" parameterType="int" resultType="Product">
+		select
+			product_id				as id,
+			small_category_id		as "smallCategory.id",
+			delivery_fee			as deliveryFee,
+			product_description		as description,
+			product_clicked			as clicked,
+			company_id				as "company.id",
+			company_name			as "company.name",
+			image_id				as "image.id",
+			discount_ratio			as discountRatio,
+			product_name			as name,
+			product_show			as show,
+			small_category_name		as "smallCategory.name",
+			product_createdate		as createDate
+		from(
+			select
+				row_number() over(order by product_id desc) rn,
+				P.product_id,
+				P.small_category_id,
+				P.delivery_fee,
+				P.product_description,
+				P.product_clicked,
+				C.company_id,
+				C.company_name,
+				P.image_id,
+				P.discount_ratio,
+				P.product_name,
+				P.product_show,
+				S.small_category_name,
+				P.product_createdate
+			from 
+				products P, small_categories S, companies C
+			where
+				P.company_id = C.company_id
+			and
+				P.small_category_id = S.small_category_id
+			and
+				P.company_id = #{companyId}
+			)
+			where rn >= 1 and rn &lt;= 6
+	</select>
+	
+	
+	<select id="productSearch" parameterType="string" resultType="Product">
+		select
+			product_id				as id,
+			small_category_id		as "smallCategory.id",
+			delivery_fee			as deliveryFee,
+			product_description		as description,
+			product_clicked			as clicked,
+			P.image_id				as "image.id",
+			I.image_path 			as "image.path",
+			discount_ratio			as discountRatio,
+			product_name			as name,
+			product_show			as show,
+			product_createdate		as createDate
+		from products P, images I
+		where P.product_name like '%' || #{keyword} || '%'
+		and P.image_id = I.image_id
+	</select>
+</mapper>

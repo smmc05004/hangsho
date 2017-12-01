@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.hangsho.coupons.mappers.CouponMapper">
+
+	<select id="getSeq" resultType="int">
+		select coupon_seq.nextval from dual
+	</select>
+	
+	<select id="getCouponListByCustomerId" parameterType="int" resultType="Coupon">
+		select
+			coupon_id		as id,
+			coupon_used		as used,
+			discount_price	as discountPrice,
+			coupon_expiredate	as expireDate,
+			customer_id		as customer
+		from
+			coupons
+		where
+			customer_id = #{value}
+		and
+			coupon_used = 'N'
+		
+	</select>
+	<select id="couponCountByCustomerId" parameterType="int" resultType="int">
+		select count 
+			(distinct coupon_id)
+		from 
+			coupons
+		where
+			customer_id = #{value}
+		and
+			coupon_used = 'N'		
+	</select>
+	
+	<update id="couponUsed" parameterType="int">
+		update coupons
+		<set>
+			<choose>
+				<when test="value != null and value != ''">
+					coupon_used = 'Y'
+				</when>
+				<otherwise>
+					coupon_used = 'N'
+				</otherwise>
+			</choose>
+		</set>
+		<where>
+			coupon_id = #{value}
+		</where>
+	</update>
+
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

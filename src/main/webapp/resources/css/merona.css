@@ -1,0 +1,11 @@
+select[name="opt"]{margin-left: 240px;}
+.write_sb{margin-right: 15px;}
+.write_sb a{color: #fff !important;}
+.privatedeal{margin-top: 20px;}
+.privatedeal th{font-weight: bold;}
+.privatedeal th{text-align: center;}
+.privatedeal td{text-align: center;}
+.privatedeal td:first-child+td{text-align: left;}
+.privatedeal td:first-child+td+td+td{font-weight: bold;}
+.privatedeal td a:hover{text-decoration: underline !important;color: #5cb85c !important;}
+.privatedeal td span{text-align: right;}
